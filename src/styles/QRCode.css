@@ -1,0 +1,160 @@
+/* QR Code Generator Styles */
+
+.qr-generator {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.qr-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.qr-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.qr-header p {
+  color: #718096;
+  font-size: 1rem;
+}
+
+.qr-container {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2rem;
+  align-items: start;
+  margin-bottom: 2rem;
+}
+
+.qr-code-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+.qr-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.qr-details {
+  background-color: #f7fafc;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+}
+
+.qr-details h4 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+
+.qr-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.qr-detail-item:last-child {
+  border-bottom: none;
+}
+
+.qr-detail-item .label {
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 0.875rem;
+}
+
+.qr-detail-item .value {
+  color: #2d3748;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.status-verified {
+  color: #38a169 !important;
+  font-weight: 600;
+}
+
+.download-btn {
+  align-self: flex-start;
+}
+
+.qr-instructions {
+  background-color: #f7fafc;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  border-left: 4px solid #ff6b35;
+}
+
+.qr-instructions h4 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 1rem;
+}
+
+.qr-instructions ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.qr-instructions li {
+  color: #4a5568;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.qr-instructions li:before {
+  content: "•";
+  color: #ff6b35;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.qr-instructions li:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .qr-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    text-align: center;
+  }
+  
+  .qr-code-wrapper {
+    justify-self: center;
+  }
+  
+  .download-btn {
+    align-self: center;
+  }
+  
+  .qr-detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
