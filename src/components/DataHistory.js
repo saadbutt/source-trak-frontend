@@ -158,10 +158,6 @@ const DataHistory = ({ farmData }) => {
                   <span className="detail-value batch-id">{selectedEntry.batch_id}</span>
                 </div>
                 <div className="detail-item">
-                  <span className="detail-label">Farmer Signature</span>
-                  <span className="detail-value">{selectedEntry.farmer_signature}</span>
-                </div>
-                <div className="detail-item">
                   <span className="detail-label">Status</span>
                   <span className="detail-value">{getStatusBadge(selectedEntry.status)}</span>
                 </div>

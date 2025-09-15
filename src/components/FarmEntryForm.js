@@ -12,14 +12,14 @@ const FarmEntryForm = ({ onDataSubmit }) => {
     product_type: '',
     batch_id: uuidv4(),
     farming_method: '',
-    certifications: '',
-    farmer_signature: ''
+    certifications: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   const [submittedData, setSubmittedData] = useState(null);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [locationError, setLocationError] = useState('');
+  const [showLocationHelp, setShowLocationHelp] = useState(false);
 
   const farmingMethods = [
     'Organic',
@@ -62,11 +62,20 @@ const FarmEntryForm = ({ onDataSubmit }) => {
       return;
     }
 
+    // Always try to get location - this will trigger the permission dialog if needed
+    fetchLocation();
+  };
+
+  const fetchLocation = () => {
     setIsGettingLocation(true);
     setLocationError('');
+    setShowLocationHelp(false);
 
+    // This will trigger the browser's permission dialog if needed
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        console.log("Latitude:", position.coords.latitude);
+        console.log("Longitude:", position.coords.longitude);
         const { latitude, longitude } = position.coords;
         const coordinates = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
         setFormData({
@@ -79,10 +88,11 @@ const FarmEntryForm = ({ onDataSubmit }) => {
         setIsGettingLocation(false);
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            setLocationError('Location access denied by user. Please enable location permissions or enter coordinates manually.');
+            setLocationError('Location access was denied. Please click "Allow" when the browser asks for permission, or enable location access in your browser settings.');
+            setShowLocationHelp(true);
             break;
           case error.POSITION_UNAVAILABLE:
-            setLocationError('Location information is unavailable. Please enter coordinates manually.');
+            setLocationError('Location information is unavailable. Please check your GPS settings or enter coordinates manually.');
             break;
           case error.TIMEOUT:
             setLocationError('Location request timed out. Please try again or enter coordinates manually.');
@@ -94,8 +104,24 @@ const FarmEntryForm = ({ onDataSubmit }) => {
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 300000 // 5 minutes
+        timeout: 20000, // Increased timeout to give user time to respond to permission dialog
+        maximumAge: 0 // Don't use cached location to ensure fresh permission check
+      }
+    );
+  };
+
+  const requestLocationPermission = () => {
+    // This will trigger the browser's permission dialog
+    navigator.geolocation.getCurrentPosition(
+      () => {
+        // Permission granted, now get the actual location
+        getCurrentLocation();
+      },
+      (error) => {
+        if (error.code === error.PERMISSION_DENIED) {
+          setLocationError('Location permission denied. Please enable location access in your browser settings.');
+          setShowLocationHelp(true);
+        }
       }
     );
   };
@@ -132,8 +158,7 @@ const FarmEntryForm = ({ onDataSubmit }) => {
       product_type: '',
       batch_id: uuidv4(),
       farming_method: '',
-      certifications: '',
-      farmer_signature: ''
+      certifications: ''
     });
     setShowQRCode(false);
     setSubmittedData(null);
@@ -182,10 +207,6 @@ const FarmEntryForm = ({ onDataSubmit }) => {
             <div className="data-item">
               <span className="data-label">Certifications:</span>
               <span className="data-value">{submittedData.certifications}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Farmer Signature:</span>
-              <span className="data-value">{submittedData.farmer_signature}</span>
             </div>
           </div>
         </div>
@@ -283,6 +304,50 @@ const FarmEntryForm = ({ onDataSubmit }) => {
           {locationError && (
             <div className="location-error">
               {locationError}
+              {showLocationHelp && (
+                <div className="location-help">
+                  <h4>Location Permission Required</h4>
+                  <div className="permission-info">
+                    <p>When you click "Get Current Location", your browser will show a permission dialog asking:</p>
+                    <div className="permission-dialog-example">
+                      <strong>"sourcetrak-frontend wants to know your location"</strong>
+                      <div className="permission-options">
+                        <span className="option allow">✓ Allow</span>
+                        <span className="option block">✗ Block</span>
+                      </div>
+                    </div>
+                    <p>Please click <strong>"Allow"</strong> to enable location access.</p>
+                  </div>
+                  <div className="browser-instructions">
+                    <h5>If you don't see the permission dialog:</h5>
+                    <div className="browser-item">
+                      <strong>Chrome/Edge:</strong> Click the lock icon in the address bar → Site settings → Location → Allow
+                    </div>
+                    <div className="browser-item">
+                      <strong>Firefox:</strong> Click the shield icon → Permissions → Location → Allow
+                    </div>
+                    <div className="browser-item">
+                      <strong>Safari:</strong> Safari menu → Preferences → Websites → Location → Allow
+                    </div>
+                  </div>
+                  <div className="help-actions">
+                    <button 
+                      type="button" 
+                      onClick={getCurrentLocation}
+                      className="btn btn-primary btn-sm"
+                    >
+                      Try Again
+                    </button>
+                    <button 
+                      type="button" 
+                      onClick={() => setShowLocationHelp(false)}
+                      className="btn btn-secondary btn-sm"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -363,20 +428,6 @@ const FarmEntryForm = ({ onDataSubmit }) => {
               </option>
             ))}
           </select>
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="farmer_signature" className="form-label">Farmer Signature</label>
-          <input
-            type="text"
-            id="farmer_signature"
-            name="farmer_signature"
-            value={formData.farmer_signature}
-            onChange={handleChange}
-            className="form-input"
-            placeholder="Enter your digital signature"
-            required
-          />
         </div>
         
         <button 

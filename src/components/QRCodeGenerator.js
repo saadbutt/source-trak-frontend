@@ -12,7 +12,6 @@ const QRCodeGenerator = ({ data }) => {
     batch_id: data.batch_id,
     farming_method: data.farming_method,
     certifications: data.certifications,
-    farmer_signature: data.farmer_signature,
     timestamp: data.timestamp,
     status: data.status
   });
