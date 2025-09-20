@@ -7,8 +7,7 @@ const Header = () => {
     <header className="header">
       <div className="header-container">
         <Link to="/" className="logo">
-          <div className="logo-icon">🛡️</div>
-          <span className="logo-text">SourceTrak</span>
+          <img src="/logo.png" alt="SourceTrak Logo" className="logo-icon" />
         </Link>
         <Link to="/login" className="btn-get-started">
           Get Started
