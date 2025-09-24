@@ -1,241 +1,116 @@
-// API Service for SourceTrak Backend Integration
-const API_BASE_URL = process.env.NODE_ENV === 'development' ? '/api' : 'https://staging.sourcetrak.com/api';
+// API Service for connecting to deployed backend
+// Update the API_BASE_URL to your deployed backend URL
+
+const API_BASE_URL = 'https://staging.sourcetrak.com/api';
 
 class ApiService {
   constructor() {
     this.baseURL = API_BASE_URL;
   }
 
-  // Helper method to get headers with user authentication
-  getHeaders(userId = null) {
+  // Helper method to get headers with authentication
+  getHeaders() {
     const headers = {
       'Content-Type': 'application/json',
     };
-    
-    if (userId) {
-      headers['user-id'] = userId;
+
+    // Add user authentication headers if available
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (user.id) {
+      headers['user-id'] = user.id;
+      headers['user-role'] = user.role;
     }
-    
+
     return headers;
   }
 
-  // Authentication APIs
-  async login(email, password) {
+  // Helper method to make HTTP requests
+  async request(endpoint, options = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    const config = {
+      headers: this.getHeaders(),
+      ...options,
+    };
+
+    console.log(`API Request: ${config.method || 'GET'} ${url}`, config);
+
     try {
-      const response = await fetch(`${this.baseURL}/login?user-email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
+      const response = await fetch(url, config);
+      const data = await response.json();
+
+      console.log(`API Response: ${response.status}`, data);
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Login failed');
+        throw new Error(data.error || `HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      return data;
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('API Error:', error);
       throw error;
     }
+  }
+
+  // Authentication endpoints
+  async login(email, password) {
+    return this.request(`/login?user-email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
+  }
+
+  async signup(userData) {
+    return this.request('/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
   }
 
   async logout() {
-    try {
-      const response = await fetch(`${this.baseURL}/logout`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        throw new Error('Logout failed');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Logout error:', error);
-      throw error;
-    }
+    return this.request('/logout', {
+      method: 'POST',
+    });
   }
 
-  async createUser(userData) {
-    try {
-      const response = await fetch(`${this.baseURL}/users`, {
-        method: 'POST',
-        headers: this.getHeaders(),
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'User creation failed');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Create user error:', error);
-      throw error;
-    }
-  }
-
+  // User management
   async getUser(userId) {
-    try {
-      const response = await fetch(`${this.baseURL}/users/${userId}`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to get user');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Get user error:', error);
-      throw error;
-    }
+    return this.request(`/users/${userId}`);
   }
 
-  // Batch Management APIs
-  async createBatch(userId) {
-    try {
-      const response = await fetch(`${this.baseURL}/batches`, {
-        method: 'POST',
-        headers: this.getHeaders(userId),
-      });
+  async getAllUsers() {
+    return this.request('/users');
+  }
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Batch creation failed');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Create batch error:', error);
-      throw error;
-    }
+  // Batch management
+  async createBatch() {
+    return this.request('/batches', {
+      method: 'POST',
+    });
   }
 
   async getBatch(batchId) {
-    try {
-      const response = await fetch(`${this.baseURL}/batches/${batchId}`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to get batch');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Get batch error:', error);
-      throw error;
-    }
+    return this.request(`/batches/${batchId}`);
   }
 
   async getBatchData(batchId) {
-    try {
-      const response = await fetch(`${this.baseURL}/batches/${batchId}/data`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to get batch data');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Get batch data error:', error);
-      throw error;
-    }
+    return this.request(`/batches/${batchId}/data`);
   }
 
   async getBatchBlockchainData(batchId) {
-    try {
-      const response = await fetch(`${this.baseURL}/batches/${batchId}/blockchain`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to get blockchain data');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Get blockchain data error:', error);
-      throw error;
-    }
+    return this.request(`/batches/${batchId}/blockchain`);
   }
 
-  // Data Submission APIs
-  async submitData(userId, data) {
-    try {
-      const response = await fetch(`${this.baseURL}/data`, {
-        method: 'POST',
-        headers: this.getHeaders(userId),
-        body: JSON.stringify(data),
-      });
+  async getUserTraceabilityHistory(page = 1, pageSize = 100) {
+    return this.request(`/batches/history?page=${page}&page_size=${pageSize}`);
+  }
 
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Data submission failed');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Submit data error:', error);
-      throw error;
-    }
+  // Data submission
+  async submitData(data) {
+    return this.request('/data', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
   }
 
   async getDataByEventId(eventId) {
-    try {
-      const response = await fetch(`${this.baseURL}/data/event/${eventId}`, {
-        method: 'GET',
-        headers: this.getHeaders(),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to get data by event ID');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Get data by event ID error:', error);
-      throw error;
-    }
-  }
-
-  // User History APIs
-  async getUserTraceabilityHistory(userId, page = 1, pageSize = 10) {
-    try {
-      console.log('API: Getting user history for userId:', userId);
-      const response = await fetch(`${this.baseURL}/batches/history?page=${page}&page_size=${pageSize}`, {
-        method: 'GET',
-        headers: this.getHeaders(userId),
-      });
-
-      console.log('API: Response status:', response.status);
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('API: Error response:', error);
-        throw new Error(error.error || 'Failed to get user history');
-      }
-
-      const data = await response.json();
-      console.log('API: Success response:', data);
-      return data;
-    } catch (error) {
-      console.error('Get user history error:', error);
-      throw error;
-    }
+    return this.request(`/data/event/${eventId}`);
   }
 }
 
