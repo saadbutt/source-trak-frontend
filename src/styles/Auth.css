@@ -117,6 +117,16 @@
   text-decoration: underline;
 }
 
+.error-message {
+  background-color: #fed7d7;
+  color: #c53030;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #e53e3e;
+}
+
 /* Responsive Design */
 @media (max-width: 640px) {
   .auth-card {

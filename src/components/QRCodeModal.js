@@ -1,0 +1,179 @@
+import React from 'react';
+import QRCode from 'qrcode.react';
+import '../styles/QRCodeModal.css';
+
+const QRCodeModal = ({ isOpen, onClose, data }) => {
+  if (!isOpen) return null;
+
+  const qrData = {
+    farm_id: data.farm_id,
+    farm_name: data.farm_name,
+    location_coordinates: data.location_coordinates,
+    harvest_date: data.harvest_date,
+    product_type: data.product_type,
+    batch_id: data.batch_id,
+    farming_method: data.farming_method,
+    certifications: data.certifications,
+    timestamp: data.timestamp,
+    txHash: data.txHash
+  };
+
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank', 'width=600,height=700');
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>QR Code - ${data.farm_name}</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              text-align: center; 
+              padding: 20px;
+              background-color: white;
+            }
+            .qr-container {
+              max-width: 500px;
+              margin: 0 auto;
+            }
+            h1 { color: #2d3748; margin-bottom: 20px; }
+            .qr-code { 
+              margin: 20px 0; 
+              display: flex;
+              justify-content: center;
+            }
+            .data-info { 
+              text-align: left; 
+              margin-top: 20px; 
+              padding: 15px;
+              background-color: #f7fafc;
+              border-radius: 5px;
+            }
+            .data-item { 
+              margin: 8px 0; 
+              display: flex; 
+              justify-content: space-between;
+            }
+            .label { font-weight: bold; color: #4a5568; }
+            .value { color: #2d3748; }
+            .qr-data {
+              margin-top: 20px; 
+              padding: 15px; 
+              background-color: #ebf8ff; 
+              border-radius: 5px;
+              font-size: 12px;
+              word-break: break-all;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="qr-container">
+            <h1>Product QR Code</h1>
+            <div class="qr-code">
+              <div id="qrcode"></div>
+            </div>
+            <div class="data-info">
+              <h3>Product Information</h3>
+              <div class="data-item">
+                <span class="label">Farm:</span>
+                <span class="value">${data.farm_name}</span>
+              </div>
+              <div class="data-item">
+                <span class="label">Product:</span>
+                <span class="value">${data.product_type}</span>
+              </div>
+              <div class="data-item">
+                <span class="label">Harvest Date:</span>
+                <span class="value">${data.harvest_date}</span>
+              </div>
+              <div class="data-item">
+                <span class="label">Method:</span>
+                <span class="value">${data.farming_method}</span>
+              </div>
+              <div class="data-item">
+                <span class="label">Status:</span>
+                <span class="value">${data.status === 'verified' ? '✅ Verified' : '⏳ Pending'}</span>
+              </div>
+            </div>
+            <div class="qr-data">
+              <strong>QR Code Data:</strong><br>
+              ${JSON.stringify(qrData, null, 2)}
+            </div>
+          </div>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
+  return (
+    <div className="qr-modal-overlay" onClick={onClose}>
+      <div className="qr-modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="qr-modal-header">
+          <h2>Product QR Code</h2>
+          <button className="qr-modal-close" onClick={onClose}>
+            ×
+          </button>
+        </div>
+        
+        <div className="qr-modal-body">
+          <div className="qr-code-container">
+            <QRCode
+              value={JSON.stringify(qrData)}
+              size={300}
+              level="M"
+              includeMargin={true}
+              renderAs="svg"
+            />
+          </div>
+          
+          <div className="qr-product-info">
+            <h3>Product Information</h3>
+            <div className="info-grid">
+              <div className="info-item">
+                <span className="info-label">Farm:</span>
+                <span className="info-value">{data.farm_name}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Product:</span>
+                <span className="info-value">{data.product_type}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Harvest Date:</span>
+                <span className="info-value">{data.harvest_date}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Method:</span>
+                <span className="info-value">{data.farming_method}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Status:</span>
+                <span className="info-value">
+                  {data.status === 'verified' ? '✅ Verified' : '⏳ Pending'}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="qr-data-section">
+            <h4>QR Code Data:</h4>
+            <pre className="qr-data-content">
+              {JSON.stringify(qrData, null, 2)}
+            </pre>
+          </div>
+        </div>
+        
+        <div className="qr-modal-footer">
+          <button onClick={handlePrint} className="btn btn-primary">
+            🖨️ Print QR Code
+          </button>
+          <button onClick={onClose} className="btn btn-secondary">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default QRCodeModal;

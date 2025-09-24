@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/DataHistory.css';
 
 const DataHistory = ({ farmData }) => {
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [filter, setFilter] = useState('all');
+  const navigate = useNavigate();
 
   const filteredData = farmData.filter(entry => {
     if (filter === 'all') return true;
@@ -100,7 +102,10 @@ const DataHistory = ({ farmData }) => {
               </div>
               
               <div className="card-footer">
-                <button className="view-details-btn">
+                <button 
+                  className="view-details-btn"
+                  onClick={() => navigate('/data-detail', { state: { data: entry } })}
+                >
                   View Details
                 </button>
               </div>

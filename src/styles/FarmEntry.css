@@ -60,6 +60,13 @@
   box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
 }
 
+.form-input:disabled {
+  background-color: #f7fafc !important;
+  color: #718096 !important;
+  cursor: not-allowed !important;
+  border-color: #e2e8f0 !important;
+}
+
 .form-input::placeholder {
   color: #a0aec0;
 }

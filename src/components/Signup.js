@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import Header from './Header';
 import Footer from './Footer';
 import '../styles/Auth.css';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    farmName: '',
-    location: ''
+    role: 'Farmer'
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { signup } = useAuth();
 
   const handleChange = (e) => {
     setFormData({
@@ -26,19 +27,40 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      setError('Passwords do not match');
+      return;
+    }
+    
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
       return;
     }
     
     setIsLoading(true);
     
-    // Simulate signup process
-    setTimeout(() => {
+    try {
+      const userData = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role
+      };
+      
+      const result = await signup(userData);
+      
+      if (result.success) {
+        navigate('/dashboard');
+      } else {
+        setError(result.error || 'Signup failed');
+      }
+    } catch (error) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
-      navigate('/dashboard');
-    }, 1000);
+    }
   };
 
   return (
@@ -54,34 +76,24 @@ const Signup = () => {
             </div>
             
             <form onSubmit={handleSubmit} className="auth-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="firstName" className="form-label">First Name</label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    className="form-input"
-                    placeholder="First name"
-                    required
-                  />
+              {error && (
+                <div className="error-message">
+                  {error}
                 </div>
-                
-                <div className="form-group">
-                  <label htmlFor="lastName" className="form-label">Last Name</label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    className="form-input"
-                    placeholder="Last name"
-                    required
-                  />
-                </div>
+              )}
+              
+              <div className="form-group">
+                <label htmlFor="name" className="form-label">Full Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder="Enter your full name"
+                  required
+                />
               </div>
               
               <div className="form-group">
@@ -129,31 +141,20 @@ const Signup = () => {
               </div>
               
               <div className="form-group">
-                <label htmlFor="farmName" className="form-label">Farm Name</label>
-                <input
-                  type="text"
-                  id="farmName"
-                  name="farmName"
-                  value={formData.farmName}
+                <label htmlFor="role" className="form-label">Role</label>
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
                   onChange={handleChange}
-                  className="form-input"
-                  placeholder="Enter your farm name"
+                  className="form-select"
                   required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="location" className="form-label">Location</label>
-                <input
-                  type="text"
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="form-input"
-                  placeholder="City, State/Province"
-                  required
-                />
+                >
+                  <option value="Farmer">Farmer</option>
+                  <option value="Producer">Producer</option>
+                  <option value="Logistics">Logistics</option>
+                  <option value="Retailer">Retailer</option>
+                </select>
               </div>
               
               <button 

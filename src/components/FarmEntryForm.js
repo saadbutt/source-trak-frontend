@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from '../contexts/AuthContext';
+import apiService from '../services/api';
 import QRCodeGenerator from './QRCodeGenerator';
 import '../styles/FarmEntry.css';
 
 const FarmEntryForm = ({ onDataSubmit }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
     farm_id: uuidv4(),
     farm_name: '',
     location_coordinates: '',
     harvest_date: '',
     product_type: '',
-    batch_id: uuidv4(),
+    batch_id: '',
     farming_method: '',
-    certifications: ''
+    certifications: '',
+    event_id: uuidv4()
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
@@ -20,6 +24,7 @@ const FarmEntryForm = ({ onDataSubmit }) => {
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [locationError, setLocationError] = useState('');
   const [showLocationHelp, setShowLocationHelp] = useState(false);
+  const [error, setError] = useState('');
 
   const farmingMethods = [
     'Organic',
@@ -129,24 +134,52 @@ const FarmEntryForm = ({ onDataSubmit }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError('');
     
-    // Simulate blockchain submission
-    setTimeout(() => {
-      const newData = {
+    try {
+      // First create a batch if user is a farmer
+      let batchId = formData.batch_id;
+      
+      if (user && user.role === 'Farmer' && !batchId) {
+        const batchResponse = await apiService.createBatch(user.id);
+        batchId = batchResponse.batch_id;
+        setFormData(prev => ({ ...prev, batch_id: batchId }));
+      }
+      
+      if (!batchId) {
+        throw new Error('Batch ID is required');
+      }
+      
+      // Prepare data for submission
+      const submissionData = {
         ...formData,
+        batch_id: batchId
+      };
+      
+      // Submit data to backend
+      const response = await apiService.submitData(user.id, submissionData);
+      
+      const newData = {
+        ...submissionData,
         id: uuidv4(),
         timestamp: new Date().toISOString(),
-        status: 'verified'
+        status: response.status || 'verified',
+        txHash: response.txHash || 'pending',
+        message: response.message || 'Data submitted successfully'
       };
       
       setSubmittedData(newData);
       setShowQRCode(true);
-      setIsSubmitting(false);
       
       if (onDataSubmit) {
         onDataSubmit(newData);
       }
-    }, 2000);
+    } catch (error) {
+      console.error('Submission error:', error);
+      setError(error.message || 'Failed to submit data. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
     const resetForm = () => {
@@ -156,12 +189,14 @@ const FarmEntryForm = ({ onDataSubmit }) => {
       location_coordinates: '',
       harvest_date: '',
       product_type: '',
-      batch_id: uuidv4(),
+      batch_id: '',
       farming_method: '',
-      certifications: ''
+      certifications: '',
+      event_id: uuidv4()
     });
     setShowQRCode(false);
     setSubmittedData(null);
+    setError('');
   };
 
   if (showQRCode && submittedData) {
@@ -170,7 +205,7 @@ const FarmEntryForm = ({ onDataSubmit }) => {
         <div className="success-header">
           <div className="success-icon">✅</div>
           <h2>Data Successfully Submitted to Blockchain!</h2>
-          <p>Your farm data has been verified and added to the blockchain.</p>
+          <p>{submittedData.message || 'Your farm data has been verified and added to the blockchain.'}</p>
         </div>
         
         <div className="submitted-data">
@@ -243,6 +278,12 @@ const FarmEntryForm = ({ onDataSubmit }) => {
       </div>
       
       <form onSubmit={handleSubmit} className="entry-form">
+        {error && (
+          <div className="error-message">
+            {error}
+          </div>
+        )}
+        
         <div className="form-group">
           <label htmlFor="farm_id" className="form-label">Farm ID (Auto-generated)</label>
           <input
@@ -385,12 +426,20 @@ const FarmEntryForm = ({ onDataSubmit }) => {
             type="text"
             id="batch_id"
             name="batch_id"
-            value={formData.batch_id}
+            value={formData.batch_id || 'Will be generated on submission'}
             className="form-input"
             readOnly
-            style={{ backgroundColor: '#f7fafc', color: '#718096' }}
+            disabled
+            style={{ backgroundColor: '#f7fafc', color: '#718096', cursor: 'not-allowed' }}
           />
         </div>
+        
+        {/* Hidden field for event_id */}
+        <input
+          type="hidden"
+          name="event_id"
+          value={formData.event_id}
+        />
         
         <div className="form-group">
           <label htmlFor="farming_method" className="form-label">Farming Method</label>
