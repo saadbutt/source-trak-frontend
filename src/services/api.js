@@ -53,7 +53,10 @@ class ApiService {
 
   // Authentication endpoints
   async login(email, password) {
-    return this.request(`/login?user-email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
+    return this.request('/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
   }
 
   async signup(userData) {
@@ -61,6 +64,11 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify(userData),
     });
+  }
+
+  // Alias for signup
+  async createUser(userData) {
+    return this.signup(userData);
   }
 
   async logout() {
