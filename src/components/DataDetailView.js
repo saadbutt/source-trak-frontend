@@ -10,6 +10,7 @@ const DataDetailView = () => {
   const location = useLocation();
   const data = location.state?.data;
   const [showQRModal, setShowQRModal] = useState(false);
+  const [blockchainError, setBlockchainError] = useState('');
 
   if (!data) {
     return (
@@ -39,8 +40,9 @@ const DataDetailView = () => {
     if (data.txHash && data.txHash !== 'pending-blockchain-connection') {
       // Open blockchain explorer in new tab
       window.open(`http://167.99.222.73:8090/#/transactions/${data.txHash}`, '_blank');
+      setBlockchainError(''); // Clear any previous error
     } else {
-      alert('Blockchain transaction is still pending or not available.');
+      setBlockchainError('Blockchain transaction is still pending or not available.');
     }
   };
 
@@ -153,7 +155,6 @@ const DataDetailView = () => {
             <button 
               onClick={handleViewBlockchain} 
               className="btn btn-secondary"
-              disabled={!data.txHash || data.txHash === 'pending-blockchain-connection'}
             >
               🔗 View on Blockchain Explorer
             </button>
@@ -161,6 +162,13 @@ const DataDetailView = () => {
               🖨️ Print Details
             </button>
           </div>
+          
+          {/* Blockchain error message displayed near the button */}
+          {blockchainError && (
+            <div className="error-message" style={{ marginTop: '1rem', textAlign: 'center' }}>
+              {blockchainError}
+            </div>
+          )}
         </div>
       </main>
       

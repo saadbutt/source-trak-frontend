@@ -110,11 +110,6 @@ const Dashboard = () => {
                 Logout
               </button>
             </div>
-            {error && (
-              <div className="error-message">
-                {error}
-              </div>
-            )}
           </div>
 
           {/* Stats Cards */}
@@ -173,6 +168,13 @@ const Dashboard = () => {
               View History
             </button>
           </div>
+
+          {/* Error message displayed near content area */}
+          {error && (
+            <div className="error-message" style={{ marginBottom: '1rem', textAlign: 'center' }}>
+              {error}
+            </div>
+          )}
 
           {/* Tab Content */}
           <div className="tab-content">

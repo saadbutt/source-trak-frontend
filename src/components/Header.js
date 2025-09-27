@@ -9,7 +9,7 @@ const Header = () => {
   return (
     <header className="header">
       <div className="header-container">
-        <Link to="/" className="logo">
+        <Link to={isAuthenticated() ? "/dashboard" : "/"} className="logo">
           <img src="/logo.png" alt="SourceTrak Logo" className="logo-icon" />
         </Link>
         {isAuthenticated() ? (

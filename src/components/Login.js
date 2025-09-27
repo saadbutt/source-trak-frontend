@@ -55,12 +55,6 @@ const Login = () => {
             </div>
             
             <form onSubmit={handleSubmit} className="auth-form">
-              {error && (
-                <div className="error-message">
-                  {error}
-                </div>
-              )}
-              
               <div className="form-group">
                 <label htmlFor="email" className="form-label">Email Address</label>
                 <input
@@ -88,6 +82,13 @@ const Login = () => {
                   required
                 />
               </div>
+              
+              {/* Error message displayed near submit button */}
+              {error && (
+                <div className="error-message" style={{ marginBottom: '1rem' }}>
+                  {error}
+                </div>
+              )}
               
               <button 
                 type="submit" 

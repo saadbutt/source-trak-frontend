@@ -1,11 +1,40 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import Header from './Header';
 import Footer from './Footer';
 import FeatureCard from './FeatureCard';
 import '../styles/Landing.css';
 
 const Landing = () => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Show loading or nothing while redirecting authenticated users
+  if (isAuthenticated()) {
+    return (
+      <div className="landing-page">
+        <Header />
+        <main className="main-content">
+          <div className="content-container">
+            <div className="loading-message">
+              <div className="loading-spinner"></div>
+              <p>Redirecting to dashboard...</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="landing-page">
       <Header />

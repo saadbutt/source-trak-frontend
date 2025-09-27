@@ -76,12 +76,6 @@ const Signup = () => {
             </div>
             
             <form onSubmit={handleSubmit} className="auth-form">
-              {error && (
-                <div className="error-message">
-                  {error}
-                </div>
-              )}
-              
               <div className="form-group">
                 <label htmlFor="name" className="form-label">Full Name</label>
                 <input
@@ -156,6 +150,13 @@ const Signup = () => {
                   <option value="Retailer">Retailer</option>
                 </select>
               </div>
+              
+              {/* Error message displayed near submit button */}
+              {error && (
+                <div className="error-message" style={{ marginBottom: '1rem' }}>
+                  {error}
+                </div>
+              )}
               
               <button 
                 type="submit" 
