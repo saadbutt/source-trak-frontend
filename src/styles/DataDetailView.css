@@ -39,8 +39,9 @@
 }
 
 .status-verified {
-  background-color: #48bb78;
-  color: white;
+  background-color: white;
+  color: #38a169;
+  border: 1px solid #38a169;
   padding: 0.5rem 1rem;
   border-radius: 1rem;
   font-weight: 600;

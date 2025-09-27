@@ -157,7 +157,7 @@ const FarmEntryForm = ({ onDataSubmit }) => {
       };
       
       // Submit data to backend
-      const response = await apiService.submitData(user.id, submissionData);
+      const response = await apiService.submitData(submissionData);
       
       const newData = {
         ...submissionData,
@@ -248,20 +248,20 @@ const FarmEntryForm = ({ onDataSubmit }) => {
         
         <QRCodeGenerator data={submittedData} />
         
-        <div className="blockchain-explorer">
-          <h4>View on Blockchain Explorer</h4>
-          <p>Your transaction has been recorded on the blockchain. You can view it using the explorer:</p>
-          <a 
-            href="http://167.99.222.73:8090/#/transactions" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="btn btn-secondary explorer-btn"
-          >
-            🔗 View Transaction on Blockchain Explorer
-          </a>
-        </div>
-        
         <div className="success-actions">
+          <div className="blockchain-explorer">
+            <h4>View on Blockchain Explorer</h4>
+            <p>Your transaction has been recorded on the blockchain. You can view it using the explorer:</p>
+            <a 
+              href="http://167.99.222.73:8090/#/transactions" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="btn btn-secondary explorer-btn"
+            >
+              🔗 View Transaction on Blockchain Explorer
+            </a>
+          </div>
+          
           <button onClick={resetForm} className="btn btn-primary">
             Add Another Entry
           </button>
@@ -278,12 +278,6 @@ const FarmEntryForm = ({ onDataSubmit }) => {
       </div>
       
       <form onSubmit={handleSubmit} className="entry-form">
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
-        
         <div className="form-group">
           <label htmlFor="farm_id" className="form-label">Farm ID (Auto-generated)</label>
           <input
@@ -478,6 +472,13 @@ const FarmEntryForm = ({ onDataSubmit }) => {
             ))}
           </select>
         </div>
+        
+        {/* Error/Success message displayed near submit button */}
+        {error && (
+          <div className="error-message" style={{ marginBottom: '1rem' }}>
+            {error}
+          </div>
+        )}
         
         <button 
           type="submit" 

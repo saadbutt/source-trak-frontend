@@ -126,8 +126,9 @@
 }
 
 .status-verified {
-  background-color: #c6f6d5;
-  color: #22543d;
+  background-color: white;
+  color: #38a169;
+  border: 1px solid #38a169;
 }
 
 .card-content {
