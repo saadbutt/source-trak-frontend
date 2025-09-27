@@ -34,9 +34,7 @@ const Dashboard = () => {
     setError('');
     
     try {
-      console.log('Dashboard: Loading history for user:', user);
       const response = await apiService.getUserTraceabilityHistory(user.id, 1, 100);
-      console.log('Dashboard: Received response:', response);
       if (response.data) {
         // Transform backend data to frontend format
         const transformedData = response.data.map(item => {
@@ -57,10 +55,7 @@ const Dashboard = () => {
             txHash: item.txhash
           };
         });
-        console.log('Dashboard: Transformed data:', transformedData);
         setFarmData(transformedData);
-      } else {
-        console.log('Dashboard: No data in response');
       }
     } catch (error) {
       console.error('Error loading user history:', error);
