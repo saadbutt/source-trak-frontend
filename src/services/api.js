@@ -1,7 +1,7 @@
 // API Service for connecting to deployed backend
 // Update the API_BASE_URL to your deployed backend URL
 
-const API_BASE_URL = 'https://staging.sourcetrak.com/api';
+const API_BASE_URL = '/api';
 
 class ApiService {
   constructor() {
