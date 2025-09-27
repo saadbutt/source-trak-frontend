@@ -1,7 +1,7 @@
 // API Service for connecting to deployed backend
 // Update the API_BASE_URL to your deployed backend URL
 
-const API_BASE_URL = 'https://staging.sourcetrak.com/api';
+const API_BASE_URL = '/api';
 
 class ApiService {
   constructor() {
@@ -15,7 +15,7 @@ class ApiService {
     };
 
     // Add user authentication headers if available
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem('sourcetrak_user') || '{}');
     if (user.id) {
       headers['user-id'] = user.id;
       headers['user-role'] = user.role;
