@@ -29,14 +29,13 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
       // Get the existing QR code canvas element
       const canvas = document.getElementById('qr-code-canvas-modal');
       if (!canvas) {
-        console.error('QR code canvas not found with ID: qr-code-canvas-modal');
         // Try to find any canvas element in the modal
         const modalCanvas = document.querySelector('.qr-modal-content canvas');
         if (modalCanvas) {
-          console.log('Found canvas element:', modalCanvas);
           downloadCanvas(modalCanvas);
         } else {
-          alert('QR code not found. Please try again.');
+          // QR code not found, silently fail
+          return;
         }
         return;
       }
@@ -50,7 +49,7 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
       // Convert canvas to blob and download directly
       canvas.toBlob((blob) => {
         if (!blob) {
-          alert('Error generating QR code image. Please try again.');
+          // Error generating QR code, silently fail
           return;
         }
         
@@ -70,8 +69,7 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
         URL.revokeObjectURL(url);
       }, 'image/png', 1.0); // High quality PNG
     } catch (error) {
-      console.error('Download error:', error);
-      alert('Error downloading QR code. Please try again.');
+      // Download error, silently fail
     }
   };
 

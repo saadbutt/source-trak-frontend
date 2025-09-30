@@ -9,7 +9,7 @@ import DataHistory from './DataHistory';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [farmData, setFarmData] = useState([]);
   const [activeTab, setActiveTab] = useState('entry');
@@ -76,10 +76,6 @@ const Dashboard = () => {
     loadUserHistory();
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
 
   const stats = {
     totalEntries: farmData.length,
@@ -94,18 +90,6 @@ const Dashboard = () => {
       
       <main className="dashboard-main">
         <div className="dashboard-container">
-          <div className="dashboard-header">
-            <div className="header-content">
-              <div>
-                <h1>Welcome, {user?.name}</h1>
-                <p>Manage your farm data and track your products</p>
-                <span className="user-role">Role: {user?.role}</span>
-              </div>
-              <button onClick={handleLogout} className="btn btn-secondary">
-                Logout
-              </button>
-            </div>
-          </div>
 
           {/* Stats Cards */}
           <div className="stats-grid">

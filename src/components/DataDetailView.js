@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
@@ -20,38 +20,16 @@ const DataDetailView = () => {
   const [showQRModal, setShowQRModal] = useState(false);
   const [blockchainError, setBlockchainError] = useState('');
   const [showAddDataForm, setShowAddDataForm] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
   const [batchHistory, setBatchHistory] = useState([]);
 
-  useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate('/login');
-      return;
-    }
-
-    // Check if data was passed via navigation state (legacy support)
-    if (location.state?.data) {
-      setData(location.state.data);
-      setLoading(false);
-      return;
-    }
-
-    // If batchId is provided, fetch data from API
-    if (batchId) {
-      loadBatchData();
-    } else {
-      setError('No batch ID provided');
-      setLoading(false);
-    }
-  }, [batchId, isAuthenticated, navigate, location.state]);
-
-  const loadBatchData = async () => {
+  const loadBatchData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
       
       // Fetch batch data from API
       const response = await apiService.getBatchData(batchId);
-      console.log('Batch API Response:', response);
       
       if (response && response.batch && response.data && response.data.length > 0) {
         // Get the first (or most recent) data entry
@@ -102,7 +80,7 @@ const DataDetailView = () => {
                 userRole = 'Unknown Role';
               }
             } catch (error) {
-              console.log('Could not fetch user role for user:', entry.user_id, error);
+              // Could not fetch user role, use default
               userRole = 'Unknown Role';
             }
           }
@@ -128,8 +106,29 @@ const DataDetailView = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [batchId]);
 
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      navigate('/login');
+      return;
+    }
+
+    // Check if data was passed via navigation state (legacy support)
+    if (location.state?.data) {
+      setData(location.state.data);
+      setLoading(false);
+      return;
+    }
+
+    // If batchId is provided, fetch data from API
+    if (batchId) {
+      loadBatchData();
+    } else {
+      setError('No batch ID provided');
+      setLoading(false);
+    }
+  }, [batchId, isAuthenticated, navigate, location.state, loadBatchData]);
 
   const handleBackToDashboard = () => {
     navigate('/dashboard');
@@ -196,7 +195,7 @@ const DataDetailView = () => {
           if (qrCanvas) {
             qrCanvas.toBlob((blob) => {
               if (!blob) {
-                alert('Error generating QR code image. Please try again.');
+                setError('Error generating QR code image. Please try again.');
                 return;
               }
               
@@ -215,22 +214,27 @@ const DataDetailView = () => {
               document.body.removeChild(canvas);
             }, 'image/png', 1.0);
           } else {
-            alert('Error generating QR code. Please try again.');
+            setError('Error generating QR code. Please try again.');
             document.body.removeChild(canvas);
           }
         }, 100);
       });
     }).catch(error => {
-      console.error('Error loading qrcode.react:', error);
-      alert('Error generating QR code. Please try again.');
+      setError('Error generating QR code. Please try again.');
       document.body.removeChild(canvas);
     });
   };
 
   const handleShareLink = () => {
+    if (!data || !data.batch_id) {
+      setError('Cannot share: Batch data not available');
+      return;
+    }
+    
     const shareUrl = `${window.location.origin}/batch/${data.batch_id}`;
     navigator.clipboard.writeText(shareUrl).then(() => {
-      alert('Shareable link copied to clipboard!');
+      setSuccessMessage('Shareable link copied to clipboard!');
+      setTimeout(() => setSuccessMessage(''), 3000);
     }).catch(() => {
       // Fallback for browsers that don't support clipboard API
       const textArea = document.createElement('textarea');
@@ -239,7 +243,8 @@ const DataDetailView = () => {
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      alert('Shareable link copied to clipboard!');
+      setSuccessMessage('Shareable link copied to clipboard!');
+      setTimeout(() => setSuccessMessage(''), 3000);
     });
   };
 
@@ -254,8 +259,17 @@ const DataDetailView = () => {
   };
 
   const canAddData = () => {
-    // Allow different roles to add data to the same batch
-    return user && user.role && ['Farmer', 'Producer', 'Logistics', 'Retailer'].includes(user.role);
+    // Allow only non-farmer roles to add data to existing batches
+    // Farmers can only create new batches, not add to existing ones
+    if (!user || !user.role || !['Producer', 'Logistics', 'Retailer'].includes(user.role)) {
+      return false;
+    }
+    
+    // Check if the current user has already added data to this batch
+    const userAlreadyAddedData = batchHistory.some(entry => entry.user_id === user.id);
+    
+    // Don't show the button if user has already added data to this batch
+    return !userAlreadyAddedData;
   };
 
   if (loading) {
@@ -300,9 +314,9 @@ const DataDetailView = () => {
       <Header />
       <main className="data-detail-main">
         <div className="data-detail-container">
-          {/* Header Section */}
-          <div className="detail-header">
-            <button onClick={handleBackToDashboard} className="btn btn-outline back-btn">
+          {/* Simple Header */}
+          <div className="simple-header">
+            <button onClick={handleBackToDashboard} className="btn btn-outline">
               ← Back to Dashboard
             </button>
             <h1>Batch Details</h1>
@@ -315,149 +329,135 @@ const DataDetailView = () => {
             </div>
           </div>
 
-          {/* Batch ID and Share Section */}
-          <div className="batch-info-section">
-            <div className="batch-id-display">
-              <h3>Batch ID: {data.batch_id}</h3>
-              <button onClick={handleShareLink} className="btn btn-secondary share-btn">
-                📤 Share Link
-              </button>
-            </div>
-            <p className="share-description">
-              Share this link with other users to allow them to view and add data to this batch.
-            </p>
-          </div>
+          {/* Simple Form Layout */}
+          <div className="simple-form">
+            <div className="form-group">
+              <label>Batch ID</label>
+              <div className="input-with-button">
+                <input type="text" value={data.batch_id} readOnly className="form-input" />
 
-          {/* Main Data Display */}
-          <div className="detail-content">
-            <div className="detail-section">
-              <h3>Product Information</h3>
-              <div className="detail-grid">
-                <div className="detail-item">
-                  <label>Farm Name</label>
-                  <span className="detail-value">{data.farm_name}</span>
-                </div>
-                <div className="detail-item">
-                  <label>Product Type</label>
-                  <span className="detail-value">{data.product_type}</span>
-                </div>
-                <div className="detail-item">
-                  <label>Harvest Date</label>
-                  <span className="detail-value">{data.harvest_date}</span>
-                </div>
-                <div className="detail-item">
-                  <label>Farming Method</label>
-                  <span className="detail-value">{data.farming_method}</span>
-                </div>
-                <div className="detail-item">
-                  <label>Certifications</label>
-                  <span className="detail-value">{data.certifications}</span>
-                </div>
-                <div className="detail-item">
-                  <label>Location Coordinates</label>
-                  <span className="detail-value">{data.location_coordinates}</span>
-                </div>
               </div>
             </div>
 
-            {/* Blockchain Information */}
-            <div className="detail-section">
-              <h3>Blockchain Information</h3>
-              <div className="blockchain-info">
-                <div className="detail-item">
-                  <label>Transaction Hash</label>
-                  <span className="detail-value tx-hash">
-                    {data.txHash === 'pending-blockchain-connection' ? 'Pending' : data.txHash}
-                  </span>
-                </div>
-                <div className="detail-item">
-                  <label>Verification Status</label>
-                  <span className="detail-value">
-                    {data.status === 'verified' ? '✅ Verified on Blockchain' : '⏳ Pending Verification'}
-                  </span>
-                </div>
-                <div className="detail-item">
-                  <label>Created</label>
-                  <span className="detail-value">
-                    {new Date(data.timestamp).toLocaleString()}
-                  </span>
-                </div>
-              </div>
+            <div className="form-group">
+              <label>Farm Name</label>
+              <input type="text" value={data.farm_name} readOnly className="form-input" />
             </div>
 
-            {/* Batch History */}
-            {batchHistory.length > 0 && (
-              <div className="detail-section">
-                <h3>Batch History</h3>
-                <div className="batch-history">
-                  {batchHistory.map((entry, index) => (
-                    <div key={index} className="history-item">
-                      <div className="history-header">
-                        <span className="history-role">{entry.user_role || 'Unknown Role'}</span>
-                        <span className="history-date">
-                          {new Date(entry.created_at).toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="history-content">
-                        <p><strong>Action:</strong> {entry.action || 'Data Entry'}</p>
-                        {entry.notes && <p><strong>Notes:</strong> {entry.notes}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="detail-actions">
-            <button onClick={handleDownloadQRCode} className="btn btn-primary">
-              📥 Download QR Code
-            </button>
-            <button onClick={handleViewQRCode} className="btn btn-secondary">
-              👁️ View QR Code
-            </button>
-            <button 
-              onClick={handleViewBlockchain} 
-              className="btn btn-outline"
-            >
-              🔗 View on Blockchain Explorer
-            </button>
-            <button onClick={() => window.print()} className="btn btn-outline">
-              🖨️ Print Details
-            </button>
-            {canAddData() && (
-              <button onClick={handleAddDataToBatch} className="btn btn-success">
-                ➕ Add Data to Batch
-              </button>
-            )}
-          </div>
-          
-          {/* Blockchain error message */}
-          {blockchainError && (
-            <div className="error-message" style={{ marginTop: '1rem', textAlign: 'center' }}>
-              {blockchainError}
+            <div className="form-group">
+              <label>Product Type</label>
+              <input type="text" value={data.product_type} readOnly className="form-input" />
             </div>
-          )}
 
-          {/* Add Data Form */}
-          {showAddDataForm && (
-            <div className="add-data-section">
-              <h3>Add New Data to Batch</h3>
-              <FarmEntryForm 
-                onDataSubmit={handleDataSubmit}
-                initialBatchId={data.batch_id}
-                userRole={user.role}
+            <div className="form-group">
+              <label>Harvest Date</label>
+              <input type="text" value={data.harvest_date} readOnly className="form-input" />
+            </div>
+
+            <div className="form-group">
+              <label>Farming Method</label>
+              <input type="text" value={data.farming_method} readOnly className="form-input" />
+            </div>
+
+            <div className="form-group">
+              <label>Certifications</label>
+              <input type="text" value={data.certifications} readOnly className="form-input" />
+            </div>
+
+            <div className="form-group">
+              <label>Location Coordinates</label>
+              <input type="text" value={data.location_coordinates} readOnly className="form-input" />
+            </div>
+
+            <div className="form-group">
+              <label>Transaction Hash</label>
+              <input 
+                type="text" 
+                value={data.txHash === 'pending-blockchain-connection' ? 'Pending' : data.txHash} 
+                readOnly 
+                className="form-input" 
               />
-              <button 
-                onClick={() => setShowAddDataForm(false)} 
-                className="btn btn-outline cancel-btn"
-              >
-                Cancel
-              </button>
             </div>
-          )}
-        </div>
+
+            <div className="form-group">
+              <label>Submitted By</label>
+              <input type="text" value={data.user_name || 'Unknown User'} readOnly className="form-input" />
+            </div>
+
+            <div className="form-group">
+              <label>Submitted On</label>
+              <input type="text" value={new Date(data.timestamp).toLocaleString()} readOnly className="form-input" />
+            </div>
+
+            {/* Batch History - Simplified */}
+            {batchHistory.length > 0 && (
+              <div className="batch-history-simple">
+                <h3>Batch History ({batchHistory.length} entries)</h3>
+                {batchHistory.map((entry, index) => (
+                  <div key={entry.id || index} className="history-item-simple">
+                    <div className="history-info">
+                      <span className="history-role">{entry.user_role || 'Unknown Role'}</span>
+                      <span className="history-date">{new Date(entry.created_at).toLocaleString()}</span>
+                    </div>
+                    <div className="history-details">
+                      <span>{entry.data?.product_type || 'Unknown Product'} from {entry.data?.farm_name || 'Unknown Farm'}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+            {/* Action Buttons */}
+            <div className="form-actions">
+              <button onClick={handleDownloadQRCode} className="btn btn-primary">
+                📥 Download QR Code
+              </button>
+              <button onClick={handleViewQRCode} className="btn btn-secondary">
+                👁️ View QR Code
+              </button>
+              <button onClick={handleViewBlockchain} className="btn btn-outline">
+                🔗 Blockchain Explorer
+              </button>
+              {canAddData() && (
+                <button onClick={handleAddDataToBatch} className="btn btn-success">
+                  + Add Data to Batch
+                </button>
+              )}
+            </div>
+            
+            {/* Success message */}
+            {successMessage && (
+              <div className="success-message">
+                {successMessage}
+              </div>
+            )}
+
+            {/* Blockchain error message */}
+            {blockchainError && (
+              <div className="error-message">
+                {blockchainError}
+              </div>
+            )}
+
+            {/* Add Data Form */}
+            {showAddDataForm && (
+              <div className="add-data-form">
+                <h3>Add New Data to Batch</h3>
+                <FarmEntryForm 
+                  onDataSubmit={handleDataSubmit}
+                  initialBatchId={data.batch_id}
+                  userRole={user.role}
+                />
+                <button 
+                  onClick={() => setShowAddDataForm(false)} 
+                  className="btn btn-outline"
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </div>
       </main>
       
       <Footer />

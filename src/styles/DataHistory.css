@@ -5,6 +5,7 @@
   border-radius: 1rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   padding: 2rem;
+  text-align: left;
 }
 
 .history-header {
@@ -16,12 +17,14 @@
   font-weight: 700;
   color: #2d3748;
   margin-bottom: 0.5rem;
+  text-align: left;
 }
 
 .history-header p {
   color: #718096;
   font-size: 1rem;
   margin-bottom: 1.5rem;
+  text-align: left;
 }
 
 .history-controls {
@@ -93,13 +96,11 @@
   padding: 1.5rem;
   border: 1px solid #e2e8f0;
   transition: all 0.2s ease;
-  cursor: pointer;
+  cursor: default;
 }
 
 .data-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: #ff6b35;
+  /* Removed hover effects since card is no longer clickable */
 }
 
 .card-header {

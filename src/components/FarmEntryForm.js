@@ -8,8 +8,7 @@ import '../styles/FarmEntry.css';
 const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   const { user } = useAuth();
   
-  // Debug logging
-  console.log('FarmEntryForm props:', { initialBatchId, userRole, onDataSubmit });
+  // Component props: initialBatchId, userRole, onDataSubmit
   
   const [formData, setFormData] = useState({
     farm_id: uuidv4(),
@@ -26,10 +25,9 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   // Update batch_id when initialBatchId changes
   useEffect(() => {
     if (initialBatchId && initialBatchId !== formData.batch_id) {
-      console.log('Updating batch_id from initialBatchId:', initialBatchId);
       setFormData(prev => ({ ...prev, batch_id: initialBatchId }));
     }
-  }, [initialBatchId, formData.batch_id]);
+  }, [initialBatchId]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   const [submittedData, setSubmittedData] = useState(null);
@@ -91,8 +89,6 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
     // This will trigger the browser's permission dialog if needed
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        console.log("Latitude:", position.coords.latitude);
-        console.log("Longitude:", position.coords.longitude);
         const { latitude, longitude } = position.coords;
         const coordinates = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
         setFormData({
@@ -149,19 +145,26 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
     setError('');
     
     try {
-      // Use initialBatchId if provided, otherwise create batch if user is a farmer
-      let batchId = initialBatchId || formData.batch_id;
-      console.log('Submission - initialBatchId:', initialBatchId, 'formData.batch_id:', formData.batch_id, 'final batchId:', batchId);
+      let batchId;
       
-      if (user && user.role === 'Farmer' && !batchId) {
-        console.log('Creating new batch for farmer');
-        const batchResponse = await apiService.createBatch(user.id);
-        batchId = batchResponse.batch_id;
-        setFormData(prev => ({ ...prev, batch_id: batchId }));
+      // Determine batch ID based on context
+      if (initialBatchId) {
+        // Adding data to existing batch (from DataDetailView)
+        batchId = initialBatchId;
+      } else {
+        // Creating new entry (from Dashboard)
+        if (user && user.role === 'Farmer') {
+          // Farmers can create new batches
+          const batchResponse = await apiService.createBatch(user.id);
+          batchId = batchResponse.batch_id;
+          setFormData(prev => ({ ...prev, batch_id: batchId }));
+        } else {
+          // Non-farmers need to provide a batch ID for new entries
+          throw new Error('Batch ID is required for new entries. Please contact a farmer to create a batch first.');
+        }
       }
       
       if (!batchId) {
-        console.error('No batch ID available:', { initialBatchId, formDataBatchId: formData.batch_id, userRole: user?.role });
         throw new Error('Batch ID is required');
       }
       
@@ -216,70 +219,75 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
 
   if (showQRCode && submittedData) {
     return (
-      <div className="qr-success">
-        <div className="success-header">
+      <div className="success-page">
+        {/* Simple Header */}
+        <div className="success-header-simple">
           <div className="success-icon">✅</div>
-          <h2>Data Successfully Submitted to Blockchain!</h2>
+          <h1>Data Successfully Submitted!</h1>
           <p>{submittedData.message || 'Your farm data has been verified and added to the blockchain.'}</p>
         </div>
-        
-        <div className="submitted-data">
-          <h3>Submitted Data:</h3>
-          <div className="data-grid">
-            <div className="data-item">
-              <span className="data-label">Farm ID:</span>
-              <span className="data-value">{submittedData.farm_id}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Farm Name:</span>
-              <span className="data-value">{submittedData.farm_name}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Location Coordinates:</span>
-              <span className="data-value">{submittedData.location_coordinates}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Harvest Date:</span>
-              <span className="data-value">{submittedData.harvest_date}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Product Type:</span>
-              <span className="data-value">{submittedData.product_type}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Batch ID:</span>
-              <span className="data-value">{submittedData.batch_id}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Farming Method:</span>
-              <span className="data-value">{submittedData.farming_method}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Certifications:</span>
-              <span className="data-value">{submittedData.certifications}</span>
-            </div>
+
+        {/* Simple Form Layout */}
+        <div className="success-form">
+          <div className="form-group">
+            <label>Batch ID</label>
+            <input type="text" value={submittedData.batch_id} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Farm Name</label>
+            <input type="text" value={submittedData.farm_name} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Product Type</label>
+            <input type="text" value={submittedData.product_type} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Harvest Date</label>
+            <input type="text" value={submittedData.harvest_date} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Farming Method</label>
+            <input type="text" value={submittedData.farming_method} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Certifications</label>
+            <input type="text" value={submittedData.certifications} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Location Coordinates</label>
+            <input type="text" value={submittedData.location_coordinates} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Transaction Hash</label>
+            <input 
+              type="text" 
+              value={submittedData.txHash || 'Pending'} 
+              readOnly 
+              className="form-input" 
+            />
           </div>
         </div>
-        
-        <QRCodeGenerator data={submittedData} />
-        
-        <div className="success-actions">
-          <div className="blockchain-explorer">
-            <h4>View on Blockchain Explorer</h4>
-            <p>Your transaction has been recorded on the blockchain. You can view it using the explorer:</p>
-            <a 
-              href="http://167.99.222.73:8090/#/transactions" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="btn btn-secondary explorer-btn"
-            >
-              🔗 View Transaction on Blockchain Explorer
-            </a>
-          </div>
-          
+
+        {/* Action Buttons */}
+        <div className="success-actions-simple">
           <button onClick={resetForm} className="btn btn-primary">
             Add Another Entry
           </button>
+          <a 
+            href="http://167.99.222.73:8090/#/transactions" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="btn btn-outline"
+          >
+            🔗 Blockchain Explorer
+          </a>
         </div>
       </div>
     );
@@ -431,13 +439,13 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         
         <div className="form-group">
           <label htmlFor="batch_id" className="form-label">
-            Batch ID {initialBatchId ? '(Pre-filled for existing batch)' : '(Auto-generated)'}
+            Batch ID {initialBatchId ? '(Adding to existing batch)' : (user?.role === 'Farmer' ? '(Will create new batch)' : '(Requires existing batch)')}
           </label>
           <input
             type="text"
             id="batch_id"
             name="batch_id"
-            value={formData.batch_id || (initialBatchId ? initialBatchId : 'Will be generated on submission')}
+            value={formData.batch_id || (initialBatchId ? initialBatchId : (user?.role === 'Farmer' ? 'Will be generated on submission' : 'Contact farmer to create batch first'))}
             className="form-input"
             readOnly
             disabled
@@ -502,7 +510,10 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
           className="btn btn-primary submit-btn"
           disabled={isSubmitting}
         >
-          {isSubmitting ? 'Submitting to Blockchain...' : 'Submit to Blockchain'}
+          {isSubmitting 
+            ? (initialBatchId ? 'Adding to Batch...' : 'Creating New Batch...') 
+            : (initialBatchId ? 'Add Data to Batch' : 'Submit to Blockchain')
+          }
         </button>
       </form>
     </div>
