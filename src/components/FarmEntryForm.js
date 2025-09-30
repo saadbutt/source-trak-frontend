@@ -1,23 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
 import QRCodeGenerator from './QRCodeGenerator';
 import '../styles/FarmEntry.css';
 
-const FarmEntryForm = ({ onDataSubmit }) => {
+const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   const { user } = useAuth();
+  
+  // Debug logging
+  console.log('FarmEntryForm props:', { initialBatchId, userRole, onDataSubmit });
+  
   const [formData, setFormData] = useState({
     farm_id: uuidv4(),
     farm_name: '',
     location_coordinates: '',
     harvest_date: '',
     product_type: '',
-    batch_id: '',
+    batch_id: initialBatchId || '', // Use initialBatchId if provided
     farming_method: '',
     certifications: '',
     event_id: uuidv4()
   });
+  
+  // Update batch_id when initialBatchId changes
+  useEffect(() => {
+    if (initialBatchId && initialBatchId !== formData.batch_id) {
+      console.log('Updating batch_id from initialBatchId:', initialBatchId);
+      setFormData(prev => ({ ...prev, batch_id: initialBatchId }));
+    }
+  }, [initialBatchId, formData.batch_id]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   const [submittedData, setSubmittedData] = useState(null);
@@ -137,16 +149,19 @@ const FarmEntryForm = ({ onDataSubmit }) => {
     setError('');
     
     try {
-      // First create a batch if user is a farmer
-      let batchId = formData.batch_id;
+      // Use initialBatchId if provided, otherwise create batch if user is a farmer
+      let batchId = initialBatchId || formData.batch_id;
+      console.log('Submission - initialBatchId:', initialBatchId, 'formData.batch_id:', formData.batch_id, 'final batchId:', batchId);
       
       if (user && user.role === 'Farmer' && !batchId) {
+        console.log('Creating new batch for farmer');
         const batchResponse = await apiService.createBatch(user.id);
         batchId = batchResponse.batch_id;
         setFormData(prev => ({ ...prev, batch_id: batchId }));
       }
       
       if (!batchId) {
+        console.error('No batch ID available:', { initialBatchId, formDataBatchId: formData.batch_id, userRole: user?.role });
         throw new Error('Batch ID is required');
       }
       
@@ -415,12 +430,14 @@ const FarmEntryForm = ({ onDataSubmit }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="batch_id" className="form-label">Batch ID (Auto-generated)</label>
+          <label htmlFor="batch_id" className="form-label">
+            Batch ID {initialBatchId ? '(Pre-filled for existing batch)' : '(Auto-generated)'}
+          </label>
           <input
             type="text"
             id="batch_id"
             name="batch_id"
-            value={formData.batch_id || 'Will be generated on submission'}
+            value={formData.batch_id || (initialBatchId ? initialBatchId : 'Will be generated on submission')}
             className="form-input"
             readOnly
             disabled

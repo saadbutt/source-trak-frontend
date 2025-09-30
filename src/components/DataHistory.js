@@ -104,7 +104,7 @@ const DataHistory = ({ farmData }) => {
               <div className="card-footer">
                 <button 
                   className="view-details-btn"
-                  onClick={() => navigate('/data-detail', { state: { data: entry } })}
+                  onClick={() => navigate(`/batch/${entry.batch_id}`)}
                 >
                   View Details
                 </button>

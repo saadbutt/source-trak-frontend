@@ -205,3 +205,14 @@
     justify-content: center;
   }
 }
+
+.shareable-link a {
+  color: #ff6b35;
+  text-decoration: none;
+  word-break: break-all;
+  font-size: 0.8rem;
+}
+
+.shareable-link a:hover {
+  text-decoration: underline;
+}

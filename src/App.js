@@ -34,6 +34,14 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/batch/:batchId" 
+              element={
+                <ProtectedRoute>
+                  <DataDetailView />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
         </div>
       </Router>
