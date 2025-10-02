@@ -11,7 +11,7 @@ const Signup = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'Farmer'
+    role: 'Farm/Producer'
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -144,10 +144,13 @@ const Signup = () => {
                   className="form-select"
                   required
                 >
-                  <option value="Farmer">Farmer</option>
-                  <option value="Producer">Producer</option>
-                  <option value="Logistics">Logistics</option>
-                  <option value="Retailer">Retailer</option>
+                  <option value="Farm/Producer">Farm/Producer (Origin Stage)</option>
+                  <option value="Processing/Packaging">Processing/Packaging</option>
+                  <option value="Logistics & Cold Chain Monitoring">Logistics & Cold Chain Monitoring</option>
+                  <option value="Distribution/Retail">Distribution/Retail</option>
+                  <option value="Consumer Interaction">Consumer Interaction</option>
+                  <option value="Compliance & Audit">Compliance & Audit</option>
+                  <option value="Analytics & Insights">Analytics & Insights</option>
                 </select>
               </div>
               

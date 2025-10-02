@@ -259,9 +259,9 @@ const DataDetailView = () => {
   };
 
   const canAddData = () => {
-    // Allow only non-farmer roles to add data to existing batches
-    // Farmers can only create new batches, not add to existing ones
-    if (!user || !user.role || !['Producer', 'Logistics', 'Retailer'].includes(user.role)) {
+    // Allow only non-farm/producer roles to add data to existing batches
+    // Farm/Producer can only create new batches, not add to existing ones
+    if (!user || !user.role || user.role === 'Farm/Producer') {
       return false;
     }
     

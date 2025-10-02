@@ -153,14 +153,14 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         batchId = initialBatchId;
       } else {
         // Creating new entry (from Dashboard)
-        if (user && user.role === 'Farmer') {
-          // Farmers can create new batches
+        if (user && user.role === 'Farm/Producer') {
+          // Farm/Producer can create new batches
           const batchResponse = await apiService.createBatch(user.id);
           batchId = batchResponse.batch_id;
           setFormData(prev => ({ ...prev, batch_id: batchId }));
         } else {
-          // Non-farmers need to provide a batch ID for new entries
-          throw new Error('Batch ID is required for new entries. Please contact a farmer to create a batch first.');
+          // Non-farm/producer roles need to provide a batch ID for new entries
+          throw new Error('Batch ID is required for new entries. Please contact a Farm/Producer to create a batch first.');
         }
       }
       
@@ -439,13 +439,13 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         
         <div className="form-group">
           <label htmlFor="batch_id" className="form-label">
-            Batch ID {initialBatchId ? '(Adding to existing batch)' : (user?.role === 'Farmer' ? '(Will create new batch)' : '(Requires existing batch)')}
+            Batch ID {initialBatchId ? '(Adding to existing batch)' : (user?.role === 'Farm/Producer' ? '(Will create new batch)' : '(Requires existing batch)')}
           </label>
           <input
             type="text"
             id="batch_id"
             name="batch_id"
-            value={formData.batch_id || (initialBatchId ? initialBatchId : (user?.role === 'Farmer' ? 'Will be generated on submission' : 'Contact farmer to create batch first'))}
+            value={formData.batch_id || (initialBatchId ? initialBatchId : (user?.role === 'Farm/Producer' ? 'Will be generated on submission' : 'Contact Farm/Producer to create batch first'))}
             className="form-input"
             readOnly
             disabled
