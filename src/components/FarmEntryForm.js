@@ -35,6 +35,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   const [locationError, setLocationError] = useState('');
   const [showLocationHelp, setShowLocationHelp] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const farmingMethods = [
     'Organic',
@@ -186,12 +187,20 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         message: response.message || 'Data submitted successfully'
       };
       
-      setSubmittedData(newData);
-      setShowQRCode(true);
+      // Show success message first
+      setSuccessMessage(response.message || 'Data submitted successfully! Generating QR code...');
+      setError(''); // Clear any previous errors
       
-      if (onDataSubmit) {
-        onDataSubmit(newData);
-      }
+      // Wait a moment to show the success message, then proceed to QR code
+      setTimeout(() => {
+        setSubmittedData(newData);
+        setShowQRCode(true);
+        setSuccessMessage(''); // Clear success message when showing QR code
+        
+        if (onDataSubmit) {
+          onDataSubmit(newData);
+        }
+      }, 2000); // 2 second delay to show success message
     } catch (error) {
       console.error('Submission error:', error);
       setError(error.message || 'Failed to submit data. Please try again.');
@@ -281,7 +290,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             Add Another Entry
           </button>
           <a 
-            href="http://167.99.222.73:8090/#/transactions" 
+            href="https://explorer.sourcetrak.com/#/transactions" 
             target="_blank" 
             rel="noopener noreferrer"
             className="btn btn-outline"
@@ -315,7 +324,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="farm_name" className="form-label">Farm Name</label>
+          <label htmlFor="farm_name" className="form-label">Farm Name <span className="optional-indicator">(Optional)</span></label>
           <input
             type="text"
             id="farm_name"
@@ -324,12 +333,11 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             onChange={handleChange}
             className="form-input"
             placeholder="e.g., Green Valley Farm, Organic Acres"
-            required
           />
         </div>
         
         <div className="form-group">
-          <label htmlFor="location_coordinates" className="form-label">Location Coordinates (GPS)</label>
+          <label htmlFor="location_coordinates" className="form-label">Location Coordinates (GPS) <span className="optional-indicator">(Optional)</span></label>
           <div className="location-input-group">
             <input
               type="text"
@@ -339,7 +347,6 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
               onChange={handleChange}
               className="form-input"
               placeholder="e.g., 40.7128, -74.0060"
-              required
             />
             <button
               type="button"
@@ -411,7 +418,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="harvest_date" className="form-label">Harvest Date</label>
+          <label htmlFor="harvest_date" className="form-label">Harvest Date <span className="mandatory-indicator">*</span></label>
           <input
             type="date"
             id="harvest_date"
@@ -424,7 +431,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="product_type" className="form-label">Product Type</label>
+          <label htmlFor="product_type" className="form-label">Product Type <span className="mandatory-indicator">*</span></label>
           <input
             type="text"
             id="product_type"
@@ -461,7 +468,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         />
         
         <div className="form-group">
-          <label htmlFor="farming_method" className="form-label">Farming Method</label>
+          <label htmlFor="farming_method" className="form-label">Farming Method <span className="mandatory-indicator">*</span></label>
           <select
             id="farming_method"
             name="farming_method"
@@ -480,7 +487,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="certifications" className="form-label">Certifications</label>
+          <label htmlFor="certifications" className="form-label">Certifications <span className="mandatory-indicator">*</span></label>
           <select
             id="certifications"
             name="certifications"
@@ -505,13 +512,21 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
           </div>
         )}
         
+        {successMessage && (
+          <div className="success-message" style={{ marginBottom: '1rem' }}>
+            {successMessage}
+          </div>
+        )}
+        
         <button 
           type="submit" 
           className="btn btn-primary submit-btn"
-          disabled={isSubmitting}
+          disabled={isSubmitting || successMessage}
         >
           {isSubmitting 
             ? (initialBatchId ? 'Adding to Batch...' : 'Creating New Batch...') 
+            : successMessage
+            ? 'Processing...'
             : (initialBatchId ? 'Add Data to Batch' : 'Submit to Blockchain')
           }
         </button>

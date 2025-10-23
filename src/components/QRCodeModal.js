@@ -5,23 +5,8 @@ import '../styles/QRCodeModal.css';
 const QRCodeModal = ({ isOpen, onClose, data }) => {
   if (!isOpen) return null;
 
-  // Create shareable link for the QR code
-  const shareableLink = `${window.location.origin}/batch/${data.batch_id}`;
-  
-  const qrData = {
-    type: 'sourcetrak_batch',
-    shareable_link: shareableLink,
-    farm_id: data.farm_id,
-    farm_name: data.farm_name,
-    location_coordinates: data.location_coordinates,
-    harvest_date: data.harvest_date,
-    product_type: data.product_type,
-    batch_id: data.batch_id,
-    farming_method: data.farming_method,
-    certifications: data.certifications,
-    timestamp: data.timestamp,
-    txHash: data.txHash
-  };
+  // Create shareable link for the QR code - now the QR code contains only the URL
+  const qrData = `${window.location.origin}/batch/${data.batch_id}`;
 
   const handleDownload = () => {
     // Add a small delay to ensure canvas is fully rendered
@@ -166,8 +151,8 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
       <div className="qr-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="qr-modal-header">
           <h2>Product QR Code</h2>
-          <button className="qr-modal-close" onClick={onClose}>
-            ×
+          <button className="qr-modal-close" onClick={onClose} title="Close">
+            ✕
           </button>
         </div>
         
@@ -175,7 +160,7 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
           <div className="qr-code-container">
             <QRCode
               id="qr-code-canvas-modal"
-              value={JSON.stringify(qrData)}
+              value={qrData}
               size={300}
               level="M"
               includeMargin={true}
@@ -211,8 +196,8 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
               <div className="info-item">
                 <span className="info-label">Shareable Link:</span>
                 <span className="info-value shareable-link">
-                  <a href={shareableLink} target="_blank" rel="noopener noreferrer">
-                    {shareableLink}
+                  <a href={qrData} target="_blank" rel="noopener noreferrer">
+                    {qrData}
                   </a>
                 </span>
               </div>

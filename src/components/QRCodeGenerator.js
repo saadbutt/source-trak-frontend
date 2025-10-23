@@ -3,18 +3,8 @@ import QRCode from 'qrcode.react';
 import '../styles/QRCode.css';
 
 const QRCodeGenerator = ({ data }) => {
-  const qrData = JSON.stringify({
-    farm_id: data.farm_id,
-    farm_name: data.farm_name,
-    location_coordinates: data.location_coordinates,
-    harvest_date: data.harvest_date,
-    product_type: data.product_type,
-    batch_id: data.batch_id,
-    farming_method: data.farming_method,
-    certifications: data.certifications,
-    timestamp: data.timestamp,
-    status: data.status
-  });
+  // Generate a direct URL to the batch details page
+  const qrData = `${window.location.origin}/batch/${data.batch_id}`;
 
   const downloadQRCode = () => {
     const canvas = document.getElementById('qr-code-canvas');
@@ -28,7 +18,7 @@ const QRCodeGenerator = ({ data }) => {
     <div className="qr-generator">
       <div className="qr-header">
         <h3>QR Code Generated</h3>
-        <p>Scan this QR code to view product details</p>
+        <p>Scan this QR code to visit the product details page</p>
       </div>
       
       <div className="qr-container">
@@ -78,7 +68,7 @@ const QRCodeGenerator = ({ data }) => {
         <h4>How to Use This QR Code:</h4>
         <ul>
           <li>Print this QR code and attach it to your product packaging</li>
-          <li>Consumers can scan it to view complete product information</li>
+          <li>Consumers can scan it to be taken directly to the product details page</li>
           <li>All data is verified and stored on the blockchain</li>
           <li>Track your product's journey through the supply chain</li>
         </ul>

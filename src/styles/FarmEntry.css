@@ -42,6 +42,19 @@
   font-size: 0.875rem;
 }
 
+.mandatory-indicator {
+  color: #e53e3e;
+  font-weight: 700;
+  margin-left: 0.25rem;
+}
+
+.optional-indicator {
+  color: #718096;
+  font-weight: 400;
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
 .form-input,
 .form-select {
   width: 100%;
@@ -493,4 +506,18 @@
     width: 100%;
     max-width: 300px;
   }
+}
+
+/* Success Message Styling */
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }

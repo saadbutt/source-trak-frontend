@@ -113,6 +113,14 @@ class ApiService {
     });
   }
 
+  // Submit traceability data with role-specific validation
+  async submitTraceabilityData(role, data) {
+    return this.request('/data', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   async getDataByEventId(eventId) {
     return this.request(`/data/event/${eventId}`);
   }

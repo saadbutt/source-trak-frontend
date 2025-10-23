@@ -6,6 +6,10 @@ import Header from './Header';
 import Footer from './Footer';
 import QRCodeModal from './QRCodeModal';
 import FarmEntryForm from './FarmEntryForm';
+import ProcessingEntryForm from './ProcessingEntryForm';
+import LogisticsEntryForm from './LogisticsEntryForm';
+import DistributionEntryForm from './DistributionEntryForm';
+import ConsumerEntryForm from './ConsumerEntryForm';
 import '../styles/DataDetailView.css';
 
 const DataDetailView = () => {
@@ -136,7 +140,7 @@ const DataDetailView = () => {
 
   const handleViewBlockchain = () => {
     if (data.txHash && data.txHash !== 'pending-blockchain-connection') {
-      window.open(`http://167.99.222.73:8090/#/transactions/${data.txHash}`, '_blank');
+      window.open(`https://explorer.sourcetrak.com/#/transactions/${data.txHash}`, '_blank');
       setBlockchainError('');
     } else {
       setBlockchainError('Blockchain transaction is still pending or not available.');
@@ -148,22 +152,8 @@ const DataDetailView = () => {
   };
 
   const handleDownloadQRCode = () => {
-    // Generate QR code data
-    const shareableLink = `${window.location.origin}/batch/${data.batch_id}`;
-    const qrData = {
-      type: 'sourcetrak_batch',
-      shareable_link: shareableLink,
-      farm_id: data.farm_id,
-      farm_name: data.farm_name,
-      location_coordinates: data.location_coordinates,
-      harvest_date: data.harvest_date,
-      product_type: data.product_type,
-      batch_id: data.batch_id,
-      farming_method: data.farming_method,
-      certifications: data.certifications,
-      timestamp: data.timestamp,
-      txHash: data.txHash
-    };
+    // Generate QR code data - now contains only the URL
+    const qrData = `${window.location.origin}/batch/${data.batch_id}`;
 
     // Create a hidden canvas element for QR code generation
     const canvas = document.createElement('canvas');
@@ -179,7 +169,7 @@ const DataDetailView = () => {
       import('react-dom').then(ReactDOM => {
         // Create a temporary React element
         const qrElement = React.createElement(QRCodeReact.default, {
-          value: JSON.stringify(qrData),
+          value: qrData,
           size: 512,
           level: 'M',
           includeMargin: true,
@@ -258,6 +248,26 @@ const DataDetailView = () => {
     setShowAddDataForm(false);
   };
 
+  const getBatchHistoryDisplayText = (entry) => {
+    const userRole = entry.user_role || 'Unknown';
+    const data = entry.data || {};
+    
+    switch (userRole.toLowerCase()) {
+      case 'farm/producer':
+        return `${data.product_type || 'Farm Product'} from ${data.farm_name || 'Unknown Farm'}`;
+      case 'processing/packaging':
+        return `${data.packaging_type || 'Processed Product'} from ${data.facility_name || 'Unknown Facility'}`;
+      case 'logistics & cold chain monitoring':
+        return `Shipment ${data.shipment_id || 'Unknown'} by ${data.logistics_provider_id || 'Unknown Provider'}`;
+      case 'distribution/retail':
+        return `Retail ${data.retailer_id || 'Unknown'} at ${data.store_location || 'Unknown Location'}`;
+      case 'consumer interaction':
+        return `Consumer feedback: ${data.consumer_feedback || 'No feedback'}`;
+      default:
+        return `${userRole} data entry`;
+    }
+  };
+
   const canAddData = () => {
     // Allow only non-farm/producer roles to add data to existing batches
     // Farm/Producer can only create new batches, not add to existing ones
@@ -265,8 +275,32 @@ const DataDetailView = () => {
       return false;
     }
     
+    // If no batch history loaded yet, don't show button (wait for data to load)
+    if (!batchHistory || batchHistory.length === 0) {
+      return false;
+    }
+    
     // Check if the current user has already added data to this batch
-    const userAlreadyAddedData = batchHistory.some(entry => entry.user_id === user.id);
+    console.log('Checking canAddData:');
+    console.log('Current user ID:', user.id, typeof user.id);
+    console.log('Batch history entries:', batchHistory.length);
+    console.log('User IDs in batch history:', batchHistory.map(entry => ({ 
+      user_id: entry.user_id, 
+      type: typeof entry.user_id,
+      user_role: entry.user_role 
+    })));
+    
+    // More robust comparison - handle both string and UUID formats
+    const userAlreadyAddedData = batchHistory.some(entry => {
+      const entryUserId = String(entry.user_id);
+      const currentUserId = String(user.id);
+      const isMatch = entryUserId === currentUserId;
+      console.log(`Comparing: "${entryUserId}" === "${currentUserId}" = ${isMatch}`);
+      return isMatch;
+    });
+    
+    console.log('User already added data:', userAlreadyAddedData);
+    console.log('Will show Add Data button:', !userAlreadyAddedData);
     
     // Don't show the button if user has already added data to this batch
     return !userAlreadyAddedData;
@@ -400,7 +434,7 @@ const DataDetailView = () => {
                       <span className="history-date">{new Date(entry.created_at).toLocaleString()}</span>
                     </div>
                     <div className="history-details">
-                      <span>{entry.data?.product_type || 'Unknown Product'} from {entry.data?.farm_name || 'Unknown Farm'}</span>
+                      <span>{getBatchHistoryDisplayText(entry)}</span>
                     </div>
                   </div>
                 ))}
@@ -419,10 +453,16 @@ const DataDetailView = () => {
               <button onClick={handleViewBlockchain} className="btn btn-outline">
                 🔗 Blockchain Explorer
               </button>
-              {canAddData() && (
+              {canAddData() ? (
                 <button onClick={handleAddDataToBatch} className="btn btn-success">
                   + Add Data to Batch
                 </button>
+              ) : (
+                user && user.role !== 'Farm/Producer' && batchHistory && batchHistory.length > 0 && (
+                  <div className="already-submitted-message">
+                    ✅ You have already submitted data for this batch
+                  </div>
+                )
               )}
             </div>
             
@@ -444,11 +484,50 @@ const DataDetailView = () => {
             {showAddDataForm && (
               <div className="add-data-form">
                 <h3>Add New Data to Batch</h3>
-                <FarmEntryForm 
-                  onDataSubmit={handleDataSubmit}
-                  initialBatchId={data.batch_id}
-                  userRole={user.role}
-                />
+                {(() => {
+                  switch (user.role) {
+                    case 'Processing/Packaging':
+                      return (
+                        <ProcessingEntryForm 
+                          onDataSubmit={handleDataSubmit}
+                          initialBatchId={data.batch_id}
+                          userRole={user.role}
+                        />
+                      );
+                    case 'Logistics & Cold Chain Monitoring':
+                      return (
+                        <LogisticsEntryForm 
+                          onDataSubmit={handleDataSubmit}
+                          initialBatchId={data.batch_id}
+                          userRole={user.role}
+                        />
+                      );
+                    case 'Distribution/Retail':
+                      return (
+                        <DistributionEntryForm 
+                          onDataSubmit={handleDataSubmit}
+                          initialBatchId={data.batch_id}
+                          userRole={user.role}
+                        />
+                      );
+                    case 'Consumer Interaction':
+                      return (
+                        <ConsumerEntryForm 
+                          onDataSubmit={handleDataSubmit}
+                          initialBatchId={data.batch_id}
+                          userRole={user.role}
+                        />
+                      );
+                    default:
+                      return (
+                        <FarmEntryForm 
+                          onDataSubmit={handleDataSubmit}
+                          initialBatchId={data.batch_id}
+                          userRole={user.role}
+                        />
+                      );
+                  }
+                })()}
                 <button 
                   onClick={() => setShowAddDataForm(false)} 
                   className="btn btn-outline"
