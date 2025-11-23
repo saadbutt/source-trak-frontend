@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
+import { FaDatabase, FaCheckCircle } from 'react-icons/fa';
 import Header from './Header';
 import Footer from './Footer';
 import FarmEntryForm from './FarmEntryForm';
@@ -123,9 +124,7 @@ const Dashboard = () => {
 
   const stats = {
     totalEntries: farmData.length,
-    verifiedEntries: farmData.filter(entry => entry.status === 'verified').length,
-    uniqueProducts: new Set(farmData.map(entry => entry.product_type)).size,
-    uniqueFarms: new Set(farmData.map(entry => entry.farm_name)).size
+    verifiedEntries: farmData.filter(entry => entry.status === 'verified').length
   };
 
   return (
@@ -144,32 +143,22 @@ const Dashboard = () => {
               </div>
             ) : (
               <>
-                <div className="stat-card">
-                  <div className="stat-icon">📊</div>
+                <div className="stat-card stat-card-primary">
+                  <div className="stat-icon">
+                    <FaDatabase />
+                  </div>
                   <div className="stat-content">
                     <h3>{stats.totalEntries}</h3>
                     <p>Total Entries</p>
                   </div>
                 </div>
-            <div className="stat-card">
-              <div className="stat-icon">✅</div>
-              <div className="stat-content">
-                <h3>{stats.verifiedEntries}</h3>
-                <p>Verified Entries</p>
-              </div>
-            </div>
-            <div className="stat-card">
-              <div className="stat-icon">🌱</div>
-              <div className="stat-content">
-                <h3>{stats.uniqueProducts}</h3>
-                <p>Product Types</p>
-              </div>
-            </div>
-                <div className="stat-card">
-                  <div className="stat-icon">🏡</div>
+                <div className="stat-card stat-card-secondary">
+                  <div className="stat-icon">
+                    <FaCheckCircle />
+                  </div>
                   <div className="stat-content">
-                    <h3>{stats.uniqueFarms}</h3>
-                    <p>Farms</p>
+                    <h3>{stats.verifiedEntries}</h3>
+                    <p>Verified Entries</p>
                   </div>
                 </div>
               </>
