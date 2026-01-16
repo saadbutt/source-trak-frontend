@@ -6,7 +6,7 @@ const Footer = () => {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-left">
-          <p>© 2025 SourceTrak. All rights reserved.</p>
+          <p>© 2026 SourceTrak. All rights reserved.</p>
         </div>
         <div className="footer-right">
           <a href="#privacy">Privacy</a>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { FaCopy } from 'react-icons/fa';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
 import Header from './Header';
@@ -26,6 +27,7 @@ const DataDetailView = () => {
   const [showAddDataForm, setShowAddDataForm] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [batchHistory, setBatchHistory] = useState([]);
+  const [copiedHash, setCopiedHash] = useState(false);
 
   const loadBatchData = useCallback(async () => {
     try {
@@ -238,6 +240,27 @@ const DataDetailView = () => {
     });
   };
 
+  const handleCopyTransactionHash = () => {
+    if (!data || !data.txHash || data.txHash === 'pending-blockchain-connection') {
+      return;
+    }
+    
+    navigator.clipboard.writeText(data.txHash).then(() => {
+      setCopiedHash(true);
+      setTimeout(() => setCopiedHash(false), 2000);
+    }).catch(() => {
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = data.txHash;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedHash(true);
+      setTimeout(() => setCopiedHash(false), 2000);
+    });
+  };
+
   const handleAddDataToBatch = () => {
     setShowAddDataForm(true);
   };
@@ -405,17 +428,24 @@ const DataDetailView = () => {
 
             <div className="form-group">
               <label>Transaction Hash</label>
-              <input 
-                type="text" 
-                value={data.txHash === 'pending-blockchain-connection' ? 'Pending' : data.txHash} 
-                readOnly 
-                className="form-input" 
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Submitted By</label>
-              <input type="text" value={data.user_name || 'Unknown User'} readOnly className="form-input" />
+              <div className="input-with-button">
+                <input 
+                  type="text" 
+                  value={data.txHash === 'pending-blockchain-connection' ? 'Pending' : data.txHash} 
+                  readOnly 
+                  className="form-input" 
+                />
+                {data.txHash && data.txHash !== 'pending-blockchain-connection' && (
+                  <button 
+                    onClick={handleCopyTransactionHash}
+                    className="copy-btn-icon"
+                    title="Copy"
+                  >
+                    {copiedHash ? <span className="copy-checkmark">✓</span> : <FaCopy />}
+                    <span className="copy-tooltip">Copy</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="form-group">
