@@ -1,16 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import '../styles/DataHistory.css';
 
 const DataHistory = ({ farmData }) => {
-  const [selectedEntry, setSelectedEntry] = useState(null);
-  const [filter, setFilter] = useState('all');
   const navigate = useNavigate();
-
-  const filteredData = farmData.filter(entry => {
-    if (filter === 'all') return true;
-    return entry.product_type.toLowerCase().includes(filter.toLowerCase());
-  });
+  const { user } = useAuth();
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -28,153 +23,136 @@ const DataHistory = ({ farmData }) => {
     );
   };
 
+  const getDisplayFields = (entry) => {
+    const userRole = entry.user_role || 'Unknown';
+    
+    switch (userRole.toLowerCase()) {
+      case 'farm/producer':
+        return {
+          title: entry.product_type || 'Farm Product',
+          fields: [
+            { label: 'Farm:', value: entry.farm_name },
+            { label: 'Harvest Date:', value: entry.harvest_date ? formatDate(entry.harvest_date) : 'N/A' },
+            { label: 'Farming Method:', value: entry.farming_method },
+            { label: 'Certifications:', value: entry.certifications }
+          ]
+        };
+      case 'processing/packaging':
+        return {
+          title: entry.packaging_type || 'Processed Product',
+          fields: [
+            { label: 'Facility:', value: entry.facility_name },
+            { label: 'Processing Date:', value: entry.processing_date ? formatDate(entry.processing_date) : 'N/A' },
+            { label: 'Packaging Type:', value: entry.packaging_type },
+            { label: 'Lot Number:', value: entry.lot_number }
+          ]
+        };
+      case 'logistics & cold chain monitoring':
+        return {
+          title: `Shipment ${entry.shipment_id || 'Unknown'}`,
+          fields: [
+            { label: 'Provider:', value: entry.logistics_provider_id },
+            { label: 'Departure:', value: entry.departure_time ? formatDate(entry.departure_time) : 'N/A' },
+            { label: 'Arrival:', value: entry.arrival_time ? formatDate(entry.arrival_time) : 'N/A' },
+            { label: 'Shipment ID:', value: entry.shipment_id }
+          ]
+        };
+      case 'distribution/retail':
+        return {
+          title: `Retail ${entry.retailer_id || 'Unknown'}`,
+          fields: [
+            { label: 'Store Location:', value: entry.store_location },
+            { label: 'Inventory ID:', value: entry.inventory_id },
+            { label: 'Shelf Life:', value: entry.shelf_life_remaining },
+            { label: 'Display Date:', value: entry.display_date ? formatDate(entry.display_date) : 'N/A' }
+          ]
+        };
+      case 'consumer interaction':
+        return {
+          title: `Consumer Feedback`,
+          fields: [
+            { label: 'QR ID:', value: entry.qrid },
+            { label: 'Scan Time:', value: entry.scan_timestamp ? formatDate(entry.scan_timestamp) : 'N/A' },
+            { label: 'Feedback:', value: entry.consumer_feedback },
+            { label: 'Sustainability Score:', value: entry.sustainability_score }
+          ]
+        };
+      default:
+        return {
+          title: 'Data Entry',
+          fields: [
+            { label: 'Type:', value: userRole },
+            { label: 'Data:', value: 'View details for more information' }
+          ]
+        };
+    }
+  };
+
   return (
     <div className="data-history">
       <div className="history-header">
-        <h2>Farm Data History</h2>
-        <p>View and manage all your submitted farm entries</p>
+        <h2>Data History</h2>
         
         <div className="history-controls">
-          <div className="search-filter">
-            <input
-              type="text"
-              placeholder="Search by product type..."
-              value={filter === 'all' ? '' : filter}
-              onChange={(e) => setFilter(e.target.value || 'all')}
-              className="search-input"
-            />
-          </div>
           <div className="entry-count">
-            {filteredData.length} {filteredData.length === 1 ? 'entry' : 'entries'}
+            {farmData.length} {farmData.length === 1 ? 'entry' : 'entries'}
           </div>
         </div>
       </div>
 
-      {filteredData.length === 0 ? (
+      {farmData.length === 0 ? (
         <div className="no-data">
           <div className="no-data-icon">📊</div>
           <h3>No Data Found</h3>
           <p>
-            {filter === 'all' 
-              ? "You haven't submitted any farm data yet. Start by adding your first entry!"
-              : "No entries match your search criteria."
-            }
+            You haven't submitted any farm data yet. Start by adding your first entry!
           </p>
         </div>
       ) : (
         <div className="data-grid">
-          {filteredData.map((entry) => (
-            <div 
-              key={entry.id} 
-              className="data-card"
-              onClick={() => setSelectedEntry(entry)}
-            >
-              <div className="card-header">
-                <h3 className="product-name">{entry.product_type}</h3>
-                {getStatusBadge(entry.status)}
-              </div>
+          {farmData.map((entry) => {
+            const displayData = getDisplayFields(entry);
+            return (
+              <div 
+                key={entry.id} 
+                className="data-card"
+              >
+                <div className="card-header">
+                  <h3 className="product-name">{displayData.title}</h3>
+                  {getStatusBadge(entry.status)}
+                </div>
+                
+                <div className="card-content">
+                  {displayData.fields.map((field, index) => (
+                    <div key={index} className="data-row">
+                      <span className="label">{field.label}</span>
+                      <span className="value">{field.value || 'N/A'}</span>
+                    </div>
+                  ))}
+                  <div className="data-row">
+                    <span className="label">Batch ID:</span>
+                    <span className="value batch-id">{entry.batch_id}</span>
+                  </div>
+                  <div className="data-row">
+                    <span className="label">Submitted:</span>
+                    <span className="value">{formatDate(entry.timestamp)}</span>
+                  </div>
+                </div>
               
-              <div className="card-content">
-                <div className="data-row">
-                  <span className="label">Farm:</span>
-                  <span className="value">{entry.farm_name}</span>
-                </div>
-                <div className="data-row">
-                  <span className="label">Harvest Date:</span>
-                  <span className="value">{formatDate(entry.harvest_date)}</span>
-                </div>
-                <div className="data-row">
-                  <span className="label">Farming Method:</span>
-                  <span className="value">{entry.farming_method}</span>
-                </div>
-                <div className="data-row">
-                  <span className="label">Certifications:</span>
-                  <span className="value">{entry.certifications}</span>
-                </div>
-                <div className="data-row">
-                  <span className="label">Batch ID:</span>
-                  <span className="value batch-id">{entry.batch_id}</span>
-                </div>
-                <div className="data-row">
-                  <span className="label">Submitted:</span>
-                  <span className="value">{formatDate(entry.timestamp)}</span>
+                <div className="card-footer">
+                  <button 
+                    className="view-details-btn"
+                    onClick={() => navigate(`/batch/${entry.batch_id}`)}
+                  >
+                    View Details
+                  </button>
                 </div>
               </div>
-              
-              <div className="card-footer">
-                <button 
-                  className="view-details-btn"
-                  onClick={() => navigate('/data-detail', { state: { data: entry } })}
-                >
-                  View Details
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* Detail Modal */}
-      {selectedEntry && (
-        <div className="modal-overlay" onClick={() => setSelectedEntry(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Entry Details</h3>
-              <button 
-                className="close-btn"
-                onClick={() => setSelectedEntry(null)}
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="modal-body">
-              <div className="detail-grid">
-                <div className="detail-item">
-                  <span className="detail-label">Farm ID</span>
-                  <span className="detail-value batch-id">{selectedEntry.farm_id}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Farm Name</span>
-                  <span className="detail-value">{selectedEntry.farm_name}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Location Coordinates</span>
-                  <span className="detail-value">{selectedEntry.location_coordinates}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Product Type</span>
-                  <span className="detail-value">{selectedEntry.product_type}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Harvest Date</span>
-                  <span className="detail-value">{formatDate(selectedEntry.harvest_date)}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Farming Method</span>
-                  <span className="detail-value">{selectedEntry.farming_method}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Certifications</span>
-                  <span className="detail-value">{selectedEntry.certifications}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Batch ID</span>
-                  <span className="detail-value batch-id">{selectedEntry.batch_id}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Status</span>
-                  <span className="detail-value">{getStatusBadge(selectedEntry.status)}</span>
-                </div>
-                <div className="detail-item">
-                  <span className="detail-label">Submitted</span>
-                  <span className="detail-value">{new Date(selectedEntry.timestamp).toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

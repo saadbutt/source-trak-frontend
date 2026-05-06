@@ -15,7 +15,7 @@ class ApiService {
     };
 
     // Add user authentication headers if available
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = JSON.parse(localStorage.getItem('sourcetrak_user') || '{}');
     if (user.id) {
       headers['user-id'] = user.id;
       headers['user-role'] = user.role;
@@ -32,13 +32,9 @@ class ApiService {
       ...options,
     };
 
-    console.log(`API Request: ${config.method || 'GET'} ${url}`, config);
-
     try {
       const response = await fetch(url, config);
       const data = await response.json();
-
-      console.log(`API Response: ${response.status}`, data);
 
       if (!response.ok) {
         throw new Error(data.error || `HTTP error! status: ${response.status}`);
@@ -105,12 +101,20 @@ class ApiService {
     return this.request(`/batches/${batchId}/blockchain`);
   }
 
-  async getUserTraceabilityHistory(page = 1, pageSize = 100) {
+  async getUserTraceabilityHistory(userId, page = 1, pageSize = 100) {
     return this.request(`/batches/history?page=${page}&page_size=${pageSize}`);
   }
 
   // Data submission
   async submitData(data) {
+    return this.request('/data', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Submit traceability data with role-specific validation
+  async submitTraceabilityData(role, data) {
     return this.request('/data', {
       method: 'POST',
       body: JSON.stringify(data),

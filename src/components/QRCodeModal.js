@@ -5,17 +5,57 @@ import '../styles/QRCodeModal.css';
 const QRCodeModal = ({ isOpen, onClose, data }) => {
   if (!isOpen) return null;
 
-  const qrData = {
-    farm_id: data.farm_id,
-    farm_name: data.farm_name,
-    location_coordinates: data.location_coordinates,
-    harvest_date: data.harvest_date,
-    product_type: data.product_type,
-    batch_id: data.batch_id,
-    farming_method: data.farming_method,
-    certifications: data.certifications,
-    timestamp: data.timestamp,
-    txHash: data.txHash
+  // Create shareable link for the QR code - now the QR code contains only the URL
+  const qrData = `${window.location.origin}/batch/${data.batch_id}`;
+
+  const handleDownload = () => {
+    // Add a small delay to ensure canvas is fully rendered
+    setTimeout(() => {
+      // Get the existing QR code canvas element
+      const canvas = document.getElementById('qr-code-canvas-modal');
+      if (!canvas) {
+        // Try to find any canvas element in the modal
+        const modalCanvas = document.querySelector('.qr-modal-content canvas');
+        if (modalCanvas) {
+          downloadCanvas(modalCanvas);
+        } else {
+          // QR code not found, silently fail
+          return;
+        }
+        return;
+      }
+      
+      downloadCanvas(canvas);
+    }, 100); // 100ms delay to ensure canvas is rendered
+  };
+
+  const downloadCanvas = (canvas) => {
+    try {
+      // Convert canvas to blob and download directly
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          // Error generating QR code, silently fail
+          return;
+        }
+        
+        // Create download link and trigger download
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `sourcetrak-qr-${data.batch_id}.png`;
+        link.style.display = 'none';
+        
+        // Add to DOM, click, and remove
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up
+        URL.revokeObjectURL(url);
+      }, 'image/png', 1.0); // High quality PNG
+    } catch (error) {
+      // Download error, silently fail
+    }
   };
 
   const handlePrint = () => {
@@ -111,19 +151,20 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
       <div className="qr-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="qr-modal-header">
           <h2>Product QR Code</h2>
-          <button className="qr-modal-close" onClick={onClose}>
-            ×
+          <button className="qr-modal-close" onClick={onClose} title="Close">
+            ✕
           </button>
         </div>
         
         <div className="qr-modal-body">
           <div className="qr-code-container">
             <QRCode
-              value={JSON.stringify(qrData)}
+              id="qr-code-canvas-modal"
+              value={qrData}
               size={300}
               level="M"
               includeMargin={true}
-              renderAs="svg"
+              renderAs="canvas"
             />
           </div>
           
@@ -152,6 +193,14 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
                   {data.status === 'verified' ? '✅ Verified' : '⏳ Pending'}
                 </span>
               </div>
+              <div className="info-item">
+                <span className="info-label">Shareable Link:</span>
+                <span className="info-value shareable-link">
+                  <a href={qrData} target="_blank" rel="noopener noreferrer">
+                    {qrData}
+                  </a>
+                </span>
+              </div>
             </div>
           </div>
           
@@ -164,10 +213,13 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
         </div>
         
         <div className="qr-modal-footer">
-          <button onClick={handlePrint} className="btn btn-primary">
+          <button onClick={handleDownload} className="btn btn-primary">
+            📥 Download QR Code
+          </button>
+          <button onClick={handlePrint} className="btn btn-secondary">
             🖨️ Print QR Code
           </button>
-          <button onClick={onClose} className="btn btn-secondary">
+          <button onClick={onClose} className="btn btn-outline">
             Close
           </button>
         </div>

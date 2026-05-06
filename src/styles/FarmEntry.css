@@ -42,6 +42,19 @@
   font-size: 0.875rem;
 }
 
+.mandatory-indicator {
+  color: #e53e3e;
+  font-weight: 700;
+  margin-left: 0.25rem;
+}
+
+.optional-indicator {
+  color: #718096;
+  font-weight: 400;
+  font-size: 0.75rem;
+  margin-left: 0.25rem;
+}
+
 .form-input,
 .form-select {
   width: 100%;
@@ -333,7 +346,7 @@
   background-color: #f7fafc;
   border-radius: 0.75rem;
   padding: 1.5rem;
-  margin: 2rem 0;
+  margin-bottom: 1.5rem;
   text-align: center;
   border-left: 4px solid #ff6b35;
 }
@@ -365,6 +378,10 @@
 
 .success-actions {
   margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
 }
 
 /* Responsive Design */
@@ -393,4 +410,114 @@
     min-width: auto;
     width: 100%;
   }
+}
+
+/* Simplified Success Page Styles */
+.success-page {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.success-header-simple {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.success-header-simple .success-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.success-header-simple h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.success-header-simple p {
+  color: #718096;
+  font-size: 1rem;
+}
+
+.success-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.success-form .form-group {
+  margin-bottom: 1.5rem;
+}
+
+.success-form .form-group label {
+  display: block;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.success-form .form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  background-color: #f7fafc;
+  color: #4a5568;
+  cursor: default;
+}
+
+.success-form .form-input:focus {
+  outline: none;
+  border-color: #ff6b35;
+  box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+}
+
+.success-actions-simple {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e2e8f0;
+  justify-content: center;
+}
+
+/* Responsive Design for Success Page */
+@media (max-width: 640px) {
+  .success-page {
+    padding: 1.5rem;
+  }
+  
+  .success-header-simple h1 {
+    font-size: 1.5rem;
+  }
+  
+  .success-actions-simple {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .success-actions-simple .btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+/* Success Message Styling */
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }

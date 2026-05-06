@@ -1,23 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
 import QRCodeGenerator from './QRCodeGenerator';
 import '../styles/FarmEntry.css';
 
-const FarmEntryForm = ({ onDataSubmit }) => {
+const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   const { user } = useAuth();
+  
+  // Component props: initialBatchId, userRole, onDataSubmit
+  
   const [formData, setFormData] = useState({
     farm_id: uuidv4(),
     farm_name: '',
     location_coordinates: '',
     harvest_date: '',
     product_type: '',
-    batch_id: '',
+    batch_id: initialBatchId || '', // Use initialBatchId if provided
     farming_method: '',
     certifications: '',
     event_id: uuidv4()
   });
+  
+  // Update batch_id when initialBatchId changes
+  useEffect(() => {
+    if (initialBatchId && initialBatchId !== formData.batch_id) {
+      setFormData(prev => ({ ...prev, batch_id: initialBatchId }));
+    }
+  }, [initialBatchId]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   const [submittedData, setSubmittedData] = useState(null);
@@ -25,6 +35,7 @@ const FarmEntryForm = ({ onDataSubmit }) => {
   const [locationError, setLocationError] = useState('');
   const [showLocationHelp, setShowLocationHelp] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   const farmingMethods = [
     'Organic',
@@ -79,8 +90,6 @@ const FarmEntryForm = ({ onDataSubmit }) => {
     // This will trigger the browser's permission dialog if needed
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        console.log("Latitude:", position.coords.latitude);
-        console.log("Longitude:", position.coords.longitude);
         const { latitude, longitude } = position.coords;
         const coordinates = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
         setFormData({
@@ -137,13 +146,23 @@ const FarmEntryForm = ({ onDataSubmit }) => {
     setError('');
     
     try {
-      // First create a batch if user is a farmer
-      let batchId = formData.batch_id;
+      let batchId;
       
-      if (user && user.role === 'Farmer' && !batchId) {
-        const batchResponse = await apiService.createBatch(user.id);
-        batchId = batchResponse.batch_id;
-        setFormData(prev => ({ ...prev, batch_id: batchId }));
+      // Determine batch ID based on context
+      if (initialBatchId) {
+        // Adding data to existing batch (from DataDetailView)
+        batchId = initialBatchId;
+      } else {
+        // Creating new entry (from Dashboard)
+        if (user && user.role === 'Farm/Producer') {
+          // Farm/Producer can create new batches
+          const batchResponse = await apiService.createBatch(user.id);
+          batchId = batchResponse.batch_id;
+          setFormData(prev => ({ ...prev, batch_id: batchId }));
+        } else {
+          // Non-farm/producer roles need to provide a batch ID for new entries
+          throw new Error('Batch ID is required for new entries. Please contact a Farm/Producer to create a batch first.');
+        }
       }
       
       if (!batchId) {
@@ -157,7 +176,7 @@ const FarmEntryForm = ({ onDataSubmit }) => {
       };
       
       // Submit data to backend
-      const response = await apiService.submitData(user.id, submissionData);
+      const response = await apiService.submitData(submissionData);
       
       const newData = {
         ...submissionData,
@@ -168,12 +187,20 @@ const FarmEntryForm = ({ onDataSubmit }) => {
         message: response.message || 'Data submitted successfully'
       };
       
-      setSubmittedData(newData);
-      setShowQRCode(true);
+      // Show success message first
+      setSuccessMessage(response.message || 'Data submitted successfully! Generating QR code...');
+      setError(''); // Clear any previous errors
       
-      if (onDataSubmit) {
-        onDataSubmit(newData);
-      }
+      // Wait a moment to show the success message, then proceed to QR code
+      setTimeout(() => {
+        setSubmittedData(newData);
+        setShowQRCode(true);
+        setSuccessMessage(''); // Clear success message when showing QR code
+        
+        if (onDataSubmit) {
+          onDataSubmit(newData);
+        }
+      }, 2000); // 2 second delay to show success message
     } catch (error) {
       console.error('Submission error:', error);
       setError(error.message || 'Failed to submit data. Please try again.');
@@ -201,70 +228,75 @@ const FarmEntryForm = ({ onDataSubmit }) => {
 
   if (showQRCode && submittedData) {
     return (
-      <div className="qr-success">
-        <div className="success-header">
+      <div className="success-page">
+        {/* Simple Header */}
+        <div className="success-header-simple">
           <div className="success-icon">✅</div>
-          <h2>Data Successfully Submitted to Blockchain!</h2>
+          <h1>Data Successfully Submitted!</h1>
           <p>{submittedData.message || 'Your farm data has been verified and added to the blockchain.'}</p>
         </div>
-        
-        <div className="submitted-data">
-          <h3>Submitted Data:</h3>
-          <div className="data-grid">
-            <div className="data-item">
-              <span className="data-label">Farm ID:</span>
-              <span className="data-value">{submittedData.farm_id}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Farm Name:</span>
-              <span className="data-value">{submittedData.farm_name}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Location Coordinates:</span>
-              <span className="data-value">{submittedData.location_coordinates}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Harvest Date:</span>
-              <span className="data-value">{submittedData.harvest_date}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Product Type:</span>
-              <span className="data-value">{submittedData.product_type}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Batch ID:</span>
-              <span className="data-value">{submittedData.batch_id}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Farming Method:</span>
-              <span className="data-value">{submittedData.farming_method}</span>
-            </div>
-            <div className="data-item">
-              <span className="data-label">Certifications:</span>
-              <span className="data-value">{submittedData.certifications}</span>
-            </div>
+
+        {/* Simple Form Layout */}
+        <div className="success-form">
+          <div className="form-group">
+            <label>Batch ID</label>
+            <input type="text" value={submittedData.batch_id} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Farm Name</label>
+            <input type="text" value={submittedData.farm_name} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Product Type</label>
+            <input type="text" value={submittedData.product_type} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Harvest Date</label>
+            <input type="text" value={submittedData.harvest_date} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Farming Method</label>
+            <input type="text" value={submittedData.farming_method} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Certifications</label>
+            <input type="text" value={submittedData.certifications} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Location Coordinates</label>
+            <input type="text" value={submittedData.location_coordinates} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Transaction Hash</label>
+            <input 
+              type="text" 
+              value={submittedData.txHash || 'Pending'} 
+              readOnly 
+              className="form-input" 
+            />
           </div>
         </div>
-        
-        <QRCodeGenerator data={submittedData} />
-        
-        <div className="blockchain-explorer">
-          <h4>View on Blockchain Explorer</h4>
-          <p>Your transaction has been recorded on the blockchain. You can view it using the explorer:</p>
-          <a 
-            href="http://167.99.222.73:8090/#/transactions" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="btn btn-secondary explorer-btn"
-          >
-            🔗 View Transaction on Blockchain Explorer
-          </a>
-        </div>
-        
-        <div className="success-actions">
+
+        {/* Action Buttons */}
+        <div className="success-actions-simple">
           <button onClick={resetForm} className="btn btn-primary">
             Add Another Entry
           </button>
+          <a 
+            href="https://explorer.sourcetrak.com/#/transactions" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="btn btn-outline"
+          >
+            🔗 Blockchain Explorer
+          </a>
         </div>
       </div>
     );
@@ -278,12 +310,6 @@ const FarmEntryForm = ({ onDataSubmit }) => {
       </div>
       
       <form onSubmit={handleSubmit} className="entry-form">
-        {error && (
-          <div className="error-message">
-            {error}
-          </div>
-        )}
-        
         <div className="form-group">
           <label htmlFor="farm_id" className="form-label">Farm ID (Auto-generated)</label>
           <input
@@ -298,7 +324,7 @@ const FarmEntryForm = ({ onDataSubmit }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="farm_name" className="form-label">Farm Name</label>
+          <label htmlFor="farm_name" className="form-label">Farm Name <span className="optional-indicator">(Optional)</span></label>
           <input
             type="text"
             id="farm_name"
@@ -307,12 +333,11 @@ const FarmEntryForm = ({ onDataSubmit }) => {
             onChange={handleChange}
             className="form-input"
             placeholder="e.g., Green Valley Farm, Organic Acres"
-            required
           />
         </div>
         
         <div className="form-group">
-          <label htmlFor="location_coordinates" className="form-label">Location Coordinates (GPS)</label>
+          <label htmlFor="location_coordinates" className="form-label">Location Coordinates (GPS) <span className="optional-indicator">(Optional)</span></label>
           <div className="location-input-group">
             <input
               type="text"
@@ -322,7 +347,6 @@ const FarmEntryForm = ({ onDataSubmit }) => {
               onChange={handleChange}
               className="form-input"
               placeholder="e.g., 40.7128, -74.0060"
-              required
             />
             <button
               type="button"
@@ -394,7 +418,7 @@ const FarmEntryForm = ({ onDataSubmit }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="harvest_date" className="form-label">Harvest Date</label>
+          <label htmlFor="harvest_date" className="form-label">Harvest Date <span className="mandatory-indicator">*</span></label>
           <input
             type="date"
             id="harvest_date"
@@ -407,7 +431,7 @@ const FarmEntryForm = ({ onDataSubmit }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="product_type" className="form-label">Product Type</label>
+          <label htmlFor="product_type" className="form-label">Product Type <span className="mandatory-indicator">*</span></label>
           <input
             type="text"
             id="product_type"
@@ -421,12 +445,14 @@ const FarmEntryForm = ({ onDataSubmit }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="batch_id" className="form-label">Batch ID (Auto-generated)</label>
+          <label htmlFor="batch_id" className="form-label">
+            Batch ID {initialBatchId ? '(Adding to existing batch)' : (user?.role === 'Farm/Producer' ? '(Will create new batch)' : '(Requires existing batch)')}
+          </label>
           <input
             type="text"
             id="batch_id"
             name="batch_id"
-            value={formData.batch_id || 'Will be generated on submission'}
+            value={formData.batch_id || (initialBatchId ? initialBatchId : (user?.role === 'Farm/Producer' ? 'Will be generated on submission' : 'Contact Farm/Producer to create batch first'))}
             className="form-input"
             readOnly
             disabled
@@ -442,7 +468,7 @@ const FarmEntryForm = ({ onDataSubmit }) => {
         />
         
         <div className="form-group">
-          <label htmlFor="farming_method" className="form-label">Farming Method</label>
+          <label htmlFor="farming_method" className="form-label">Farming Method <span className="mandatory-indicator">*</span></label>
           <select
             id="farming_method"
             name="farming_method"
@@ -461,7 +487,7 @@ const FarmEntryForm = ({ onDataSubmit }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="certifications" className="form-label">Certifications</label>
+          <label htmlFor="certifications" className="form-label">Certifications <span className="mandatory-indicator">*</span></label>
           <select
             id="certifications"
             name="certifications"
@@ -479,12 +505,30 @@ const FarmEntryForm = ({ onDataSubmit }) => {
           </select>
         </div>
         
+        {/* Error/Success message displayed near submit button */}
+        {error && (
+          <div className="error-message" style={{ marginBottom: '1rem' }}>
+            {error}
+          </div>
+        )}
+        
+        {successMessage && (
+          <div className="success-message" style={{ marginBottom: '1rem' }}>
+            {successMessage}
+          </div>
+        )}
+        
         <button 
           type="submit" 
           className="btn btn-primary submit-btn"
-          disabled={isSubmitting}
+          disabled={isSubmitting || successMessage}
         >
-          {isSubmitting ? 'Submitting to Blockchain...' : 'Submit to Blockchain'}
+          {isSubmitting 
+            ? (initialBatchId ? 'Adding to Batch...' : 'Creating New Batch...') 
+            : successMessage
+            ? 'Processing...'
+            : (initialBatchId ? 'Add Data to Batch' : 'Submit to Blockchain')
+          }
         </button>
       </form>
     </div>
