@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/Header.css';
+
+const AUTH_ROUTES = ['/login', '/signup', '/verify-email', '/forgot-password', '/reset-password'];
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const onAuthRoute = AUTH_ROUTES.includes(location.pathname);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -83,7 +87,7 @@ const Header = () => {
               )}
             </div>
           </div>
-        ) : (
+        ) : onAuthRoute ? null : (
           <Link to="/login" className="btn-get-started">
             Get Started
           </Link>

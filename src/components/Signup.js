@@ -5,13 +5,34 @@ import Header from './Header';
 import Footer from './Footer';
 import '../styles/Auth.css';
 
+// Backend at staging.sourcetrak.com accepts these exact role strings (verified
+// from its 400 response). The "4-role" list in the API reference doc does not
+// match the deployed reality — staging is the source of truth.
+const ROLE_OPTIONS = [
+  { value: 'Farm/Producer', label: 'Farm/Producer (Origin Stage)' },
+  { value: 'Processing/Packaging', label: 'Processing/Packaging' },
+  { value: 'Logistics & Cold Chain Monitoring', label: 'Logistics & Cold Chain Monitoring' },
+  { value: 'Distribution/Retail', label: 'Distribution/Retail' },
+  { value: 'Consumer Interaction', label: 'Consumer Interaction' },
+  { value: 'Compliance & Audit', label: 'Compliance & Audit' },
+  { value: 'Analytics & Insights', label: 'Analytics & Insights' },
+];
+
+// Mirror server rules so we don't make the user round-trip a 400.
+const validatePassword = (pw) => {
+  if (pw.length < 10) return 'Password must be at least 10 characters.';
+  if (!/[A-Za-z]/.test(pw)) return 'Password must contain at least one letter.';
+  if (!/\d/.test(pw)) return 'Password must contain at least one digit.';
+  return null;
+};
+
 const Signup = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'Farm/Producer'
+    role: 'Farm/Producer',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -19,62 +40,53 @@ const Signup = () => {
   const { signup } = useAuth();
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
+
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('Passwords do not match.');
       return;
     }
-    
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    const pwError = validatePassword(formData.password);
+    if (pwError) {
+      setError(pwError);
       return;
     }
-    
+
     setIsLoading(true);
-    
-    try {
-      const userData = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        role: formData.role
-      };
-      
-      const result = await signup(userData);
-      
-      if (result.success) {
-        navigate('/dashboard');
-      } else {
-        setError(result.error || 'Signup failed');
-      }
-    } catch (error) {
-      setError('An unexpected error occurred. Please try again.');
-    } finally {
-      setIsLoading(false);
+    const result = await signup({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      role: formData.role,
+    });
+    setIsLoading(false);
+
+    if (result.success) {
+      // Anti-enumeration: the server returns the same response whether the
+      // email is new or already registered. Always send the user to verify.
+      navigate(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+    } else {
+      setError(result.error);
     }
   };
 
   return (
     <div className="auth-page">
       <Header />
-      
+
       <main className="auth-main">
         <div className="auth-container">
           <div className="auth-card">
             <div className="auth-header">
               <h1>Join SourceTrak</h1>
-              <p>Create your account to start tracking your farm products</p>
+              <p>Create your account to start tracking your supply chain</p>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="auth-form">
               <div className="form-group">
                 <label htmlFor="name" className="form-label">Full Name</label>
@@ -89,7 +101,7 @@ const Signup = () => {
                   required
                 />
               </div>
-              
+
               <div className="form-group">
                 <label htmlFor="email" className="form-label">Email Address</label>
                 <input
@@ -103,37 +115,35 @@ const Signup = () => {
                   required
                 />
               </div>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="password" className="form-label">Password</label>
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="form-input"
-                    placeholder="Create a password"
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="form-input"
-                    placeholder="Confirm your password"
-                    required
-                  />
-                </div>
+
+              <div className="form-group">
+                <label htmlFor="password" className="form-label">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder="At least 10 chars, 1 letter, 1 digit"
+                  required
+                />
               </div>
-              
+
+              <div className="form-group">
+                <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="form-input"
+                  placeholder="Confirm your password"
+                  required
+                />
+              </div>
+
               <div className="form-group">
                 <label htmlFor="role" className="form-label">Role</label>
                 <select
@@ -144,42 +154,37 @@ const Signup = () => {
                   className="form-select"
                   required
                 >
-                  <option value="Farm/Producer">Farm/Producer (Origin Stage)</option>
-                  <option value="Processing/Packaging">Processing/Packaging</option>
-                  <option value="Logistics & Cold Chain Monitoring">Logistics & Cold Chain Monitoring</option>
-                  <option value="Distribution/Retail">Distribution/Retail</option>
-                  <option value="Consumer Interaction">Consumer Interaction</option>
-                  <option value="Compliance & Audit">Compliance & Audit</option>
-                  <option value="Analytics & Insights">Analytics & Insights</option>
+                  {ROLE_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
                 </select>
               </div>
-              
-              {/* Error message displayed near submit button */}
+
               {error && (
                 <div className="error-message" style={{ marginBottom: '1rem' }}>
                   {error}
                 </div>
               )}
-              
-              <button 
-                type="submit" 
+
+              <button
+                type="submit"
                 className="btn btn-primary auth-submit"
                 disabled={isLoading}
               >
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </button>
             </form>
-            
+
             <div className="auth-footer">
               <p>
-                Already have an account? 
+                Already have an account?
                 <Link to="/login" className="auth-link">Sign in here</Link>
               </p>
             </div>
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

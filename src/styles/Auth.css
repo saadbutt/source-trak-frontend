@@ -127,6 +127,16 @@
   border-left: 4px solid #e53e3e;
 }
 
+.info-message {
+  background-color: #e6f4ea;
+  color: #1e6b3a;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #34a853;
+}
+
 /* Responsive Design */
 @media (max-width: 640px) {
   .auth-card {
