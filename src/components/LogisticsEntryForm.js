@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FiTruck } from 'react-icons/fi';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
@@ -48,25 +49,26 @@ const LogisticsEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
     'Other'
   ];
 
+  // Cross-industry transport certifications; stored as free text.
   const transportCertifications = [
-    'ISO 9001',
-    'ISO 14001',
-    'ISO 45001',
-    'HACCP',
-    'FSSC 22000',
-    'BRC',
-    'IFS',
-    'SQF',
-    'Cold Chain Certified',
-    'GDP Compliant',
+    'None',
+    'ISO 9001 (Quality)',
+    'ISO 14001 (Environmental)',
+    'ISO 45001 (Health & Safety)',
+    'ISO 28000 (Supply Chain Security)',
+    'TAPA (Cargo Security)',
+    'GDP (Good Distribution Practice)',
+    'Temperature-Controlled Certified',
     'None'
   ];
 
+  // Shipment condition alerts; stored as free text in cold_chain_breach_flags.
   const coldChainBreachFlags = [
-    'No Breach',
+    'No Issues',
     'Temperature Exceeded',
     'Humidity Exceeded',
     'Delay in Transit',
+    'Damage / Shock Detected',
     'Equipment Failure',
     'Multiple Issues',
     'Unknown'
@@ -126,8 +128,9 @@ const LogisticsEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   return (
     <div className="logistics-entry-form">
       <div className="form-header">
-        <h2>🚚 Logistics & Cold Chain Monitoring</h2>
-        <p>Enter logistics and cold chain monitoring information for your shipment</p>
+        <div className="icon-tile"><FiTruck /></div>
+        <h2>Logistics & Transport</h2>
+        <p>Record shipment timing and transport conditions for this batch</p>
       </div>
       
       <form onSubmit={handleSubmit} className="entry-form">
@@ -140,7 +143,6 @@ const LogisticsEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             value={formData.shipment_id}
             className="form-input"
             readOnly
-            style={{ backgroundColor: '#f7fafc', color: '#718096' }}
           />
         </div>
         
@@ -190,7 +192,7 @@ const LogisticsEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="real_time_temperature_logs" className="form-label">Real-time Temperature Logs <span className="optional-indicator">(Optional)</span></label>
+          <label htmlFor="real_time_temperature_logs" className="form-label">Temperature Logs <span className="optional-indicator">(Optional)</span></label>
           <textarea
             id="real_time_temperature_logs"
             name="real_time_temperature_logs"
@@ -229,7 +231,7 @@ const LogisticsEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="cold_chain_breach_flags" className="form-label">Cold Chain Breach Flags <span className="optional-indicator">(Optional)</span></label>
+          <label htmlFor="cold_chain_breach_flags" className="form-label">Shipment Condition Alerts <span className="optional-indicator">(Optional)</span></label>
           <select
             id="cold_chain_breach_flags"
             name="cold_chain_breach_flags"
@@ -237,7 +239,7 @@ const LogisticsEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             onChange={handleChange}
             className="form-select"
           >
-            <option value="">Select breach status</option>
+            <option value="">Select condition status</option>
             {coldChainBreachFlags.map(flag => (
               <option key={flag} value={flag.toLowerCase()}>
                 {flag}

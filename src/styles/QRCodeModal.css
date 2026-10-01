@@ -1,11 +1,8 @@
-/* QR Code Modal Styles */
+/* QR Code Modal — mirrors mobile AlertModal */
 .qr-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background-color: rgba(15, 34, 54, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,10 +11,10 @@
 }
 
 .qr-modal-content {
-  background: white;
-  border-radius: 1rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  max-width: 600px;
+  background: var(--surface);
+  border-radius: 22px;
+  box-shadow: 0 24px 60px rgba(15, 34, 54, 0.25);
+  max-width: 560px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
@@ -28,118 +25,121 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 2rem;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--line);
 }
 
 .qr-modal-header h2 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #2d3748;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
 }
 
 .qr-modal-close {
-  background: #f7fafc;
-  border: 1px solid #e2e8f0;
-  font-size: 1.25rem;
-  color: #4a5568;
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 2.375rem;
+  height: 2.375rem;
+  padding: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .qr-modal-close:hover {
-  background-color: #fed7d7;
-  border-color: #feb2b2;
-  color: #c53030;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.qr-modal-close:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  background-color: var(--danger-tint);
+  border-color: var(--danger-tint);
+  color: var(--danger);
 }
 
 .qr-modal-body {
-  padding: 2rem;
+  padding: 1.5rem;
 }
 
 .qr-code-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   padding: 1rem;
-  background-color: #f7fafc;
-  border-radius: 0.5rem;
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+}
+
+.qr-code-container canvas {
+  max-width: 100%;
+  height: auto !important;
+  border-radius: 10px;
 }
 
 .qr-product-info {
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
 }
 
 .qr-product-info h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #2d3748;
-  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 0.75rem;
 }
 
 .info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1rem;
+  gap: 0.875rem 1rem;
 }
 
 .info-item {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.1875rem;
+  min-width: 0;
 }
 
 .info-label {
   font-weight: 600;
-  color: #4a5568;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-size: 0.75rem;
 }
 
 .info-value {
-  color: #2d3748;
-  font-size: 1rem;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.info-value .chip {
+  font-size: 0.75rem;
 }
 
 .qr-data-section {
-  background-color: #f7fafc;
-  border-radius: 0.5rem;
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
   padding: 1rem;
-  margin-bottom: 1rem;
 }
 
 .qr-data-section h4 {
-  margin: 0 0 0.75rem 0;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #2d3748;
+  margin: 0 0 0.625rem 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--ink);
 }
 
 .qr-data-content {
-  background-color: white;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.25rem;
+  background-color: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 8px;
   padding: 0.75rem;
+  font-family: var(--mono);
   font-size: 0.75rem;
-  color: #4a5568;
+  color: var(--ink-2);
   overflow-x: auto;
   margin: 0;
   white-space: pre-wrap;
@@ -148,86 +148,42 @@
 
 .qr-modal-footer {
   display: flex;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.625rem;
   justify-content: center;
-  padding: 1.5rem 2rem;
-  border-top: 1px solid #e2e8f0;
-  background-color: #f8f9fa;
-  border-radius: 0 0 1rem 1rem;
-}
-
-.btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  text-decoration: none;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-}
-
-.btn-primary {
-  background-color: #ff6b35;
-  color: white;
-}
-
-.btn-primary:hover {
-  background-color: #e55a2b;
-  transform: translateY(-1px);
-}
-
-.btn-secondary {
-  background-color: #4a5568;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background-color: #2d3748;
-  transform: translateY(-1px);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .qr-modal-content {
-    margin: 0.5rem;
-    max-height: 95vh;
-  }
-  
-  .qr-modal-header,
-  .qr-modal-body,
-  .qr-modal-footer {
-    padding: 1rem;
-  }
-  
-  .qr-code-container {
-    padding: 0.5rem;
-  }
-  
-  .info-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .qr-modal-footer {
-    flex-direction: column;
-  }
-  
-  .btn {
-    width: 100%;
-    justify-content: center;
-  }
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 1px solid var(--line);
 }
 
 .shareable-link a {
-  color: #ff6b35;
+  color: var(--primary);
+  font-weight: 600;
   text-decoration: none;
   word-break: break-all;
-  font-size: 0.8rem;
+  font-size: 0.8125rem;
 }
 
 .shareable-link a:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .qr-modal-header,
+  .qr-modal-body,
+  .qr-modal-footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .qr-modal-footer {
+    flex-direction: column;
+  }
+
+  .qr-modal-footer .btn {
+    width: 100%;
+  }
 }

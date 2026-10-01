@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FiBox, FiCheckCircle, FiExternalLink, FiMapPin } from 'react-icons/fi';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
@@ -16,6 +17,8 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
     location_coordinates: '',
     harvest_date: '',
     product_type: '',
+    quantity: '',
+    quantity_unit: 'kg',
     batch_id: initialBatchId || '', // Use initialBatchId if provided
     farming_method: '',
     certifications: '',
@@ -37,31 +40,33 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Industry-neutral options; the backend stores these as free text in farming_method.
   const farmingMethods = [
-    'Organic',
-    'Conventional',
-    'Hydroponic',
-    'Greenhouse',
-    'Backyard',
-    'Field',
-    'Aquaponics',
-    'Permaculture',
-    'Biodynamic',
+    'Grown / Harvested',
+    'Manufactured',
+    'Assembled',
+    'Processed',
+    'Extracted / Mined',
+    'Handcrafted',
+    'Recycled / Upcycled',
     'Regenerative'
   ];
 
+  // Units for the batch quantity (stored as quantity + quantity_unit).
+  const quantityUnits = ['kg', 'tonnes', 'lb', 'litres', 'units', 'boxes', 'pallets'];
+
+  // Cross-industry certifications; stored as free text in certifications.
   const certifications = [
-    'EU Organic',
-    'USDA Organic',
+    'None',
+    'ISO 9001 (Quality)',
+    'ISO 14001 (Environmental)',
+    'ISO 22000 / HACCP (Food Safety)',
+    'Organic',
     'Fair Trade',
-    'Rainforest Alliance',
-    'UTZ Certified',
-    'GlobalGAP',
-    'ISO 22000',
-    'HACCP',
-    'Kosher',
+    'FSC (Forestry)',
+    'CE Marking',
     'Halal',
-    'Non-GMO Project',
+    'Kosher',
     'None'
   ];
 
@@ -161,7 +166,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
           setFormData(prev => ({ ...prev, batch_id: batchId }));
         } else {
           // Non-farm/producer roles need to provide a batch ID for new entries
-          throw new Error('Batch ID is required for new entries. Please contact a Farm/Producer to create a batch first.');
+          throw new Error('Batch ID is required for new entries. Please contact a Producer to create a batch first.');
         }
       }
       
@@ -216,6 +221,8 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
       location_coordinates: '',
       harvest_date: '',
       product_type: '',
+      quantity: '',
+      quantity_unit: 'kg',
       batch_id: '',
       farming_method: '',
       certifications: '',
@@ -231,9 +238,9 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
       <div className="success-page">
         {/* Simple Header */}
         <div className="success-header-simple">
-          <div className="success-icon">✅</div>
+          <div className="success-icon"><FiCheckCircle /></div>
           <h1>Data Successfully Submitted!</h1>
-          <p>{submittedData.message || 'Your farm data has been verified and added to the blockchain.'}</p>
+          <p>{submittedData.message || 'Your data has been verified and added to the blockchain.'}</p>
         </div>
 
         {/* Simple Form Layout */}
@@ -244,7 +251,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
           </div>
 
           <div className="form-group">
-            <label>Farm Name</label>
+            <label>Producer / Site Name</label>
             <input type="text" value={submittedData.farm_name} readOnly className="form-input" />
           </div>
 
@@ -254,12 +261,17 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
           </div>
 
           <div className="form-group">
-            <label>Harvest Date</label>
+            <label>Production Date</label>
             <input type="text" value={submittedData.harvest_date} readOnly className="form-input" />
           </div>
 
           <div className="form-group">
-            <label>Farming Method</label>
+            <label>Quantity</label>
+            <input type="text" value={submittedData.quantity ? `${submittedData.quantity} ${submittedData.quantity_unit || ''}`.trim() : ''} readOnly className="form-input" />
+          </div>
+
+          <div className="form-group">
+            <label>Production Method</label>
             <input type="text" value={submittedData.farming_method} readOnly className="form-input" />
           </div>
 
@@ -295,7 +307,8 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             rel="noopener noreferrer"
             className="btn btn-outline"
           >
-            🔗 Blockchain Explorer
+            <FiExternalLink />
+            Blockchain Explorer
           </a>
         </div>
       </div>
@@ -305,13 +318,14 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   return (
     <div className="farm-entry-form">
       <div className="form-header">
-        <h2>Farm Entry Data</h2>
-        <p>Enter your farm product information to add it to the blockchain</p>
+        <div className="icon-tile"><FiBox /></div>
+        <h2>Origin Entry</h2>
+        <p>Record where and how your product was made to add it to the blockchain</p>
       </div>
       
       <form onSubmit={handleSubmit} className="entry-form">
         <div className="form-group">
-          <label htmlFor="farm_id" className="form-label">Farm ID (Auto-generated)</label>
+          <label htmlFor="farm_id" className="form-label">Origin ID (Auto-generated)</label>
           <input
             type="text"
             id="farm_id"
@@ -319,12 +333,11 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             value={formData.farm_id}
             className="form-input"
             readOnly
-            style={{ backgroundColor: '#f7fafc', color: '#718096' }}
           />
         </div>
         
         <div className="form-group">
-          <label htmlFor="farm_name" className="form-label">Farm Name <span className="optional-indicator">(Optional)</span></label>
+          <label htmlFor="farm_name" className="form-label">Producer / Site Name <span className="optional-indicator">(Optional)</span></label>
           <input
             type="text"
             id="farm_name"
@@ -332,7 +345,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             value={formData.farm_name}
             onChange={handleChange}
             className="form-input"
-            placeholder="e.g., Green Valley Farm, Organic Acres"
+            placeholder="e.g., Green Valley Farm, Northside Plant, Acme Workshop"
           />
         </div>
         
@@ -361,7 +374,8 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
                 </>
               ) : (
                 <>
-                  📍 Get Current Location
+                  <FiMapPin />
+                  Get Current Location
                 </>
               )}
             </button>
@@ -418,7 +432,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="harvest_date" className="form-label">Harvest Date <span className="mandatory-indicator">*</span></label>
+          <label htmlFor="harvest_date" className="form-label">Production Date <span className="mandatory-indicator">*</span></label>
           <input
             type="date"
             id="harvest_date"
@@ -439,24 +453,53 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             value={formData.product_type}
             onChange={handleChange}
             className="form-input"
-            placeholder="e.g., tomatoes, chickpeas, lettuce"
+            placeholder="e.g., coffee beans, cotton fabric, circuit boards"
             required
           />
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="quantity" className="form-label">Quantity <span className="mandatory-indicator">*</span></label>
+          <div className="quantity-input-group">
+            <input
+              type="number"
+              id="quantity"
+              name="quantity"
+              value={formData.quantity}
+              onChange={handleChange}
+              className="form-input"
+              placeholder="e.g., 500"
+              min="0"
+              step="any"
+              required
+            />
+            <select
+              id="quantity_unit"
+              name="quantity_unit"
+              value={formData.quantity_unit}
+              onChange={handleChange}
+              className="form-select"
+              aria-label="Quantity unit"
+            >
+              {quantityUnits.map(unit => (
+                <option key={unit} value={unit}>{unit}</option>
+              ))}
+            </select>
+          </div>
         </div>
         
         <div className="form-group">
           <label htmlFor="batch_id" className="form-label">
-            Batch ID {initialBatchId ? '(Adding to existing batch)' : (user?.role === 'Farm/Producer' ? '(Will create new batch)' : '(Requires existing batch)')}
+            Batch ID {initialBatchId ? '(Adding to existing batch)' : (user?.role === 'Farm/Producer' ? '(Auto-generated)' : '(Requires existing batch)')}
           </label>
           <input
             type="text"
             id="batch_id"
             name="batch_id"
-            value={formData.batch_id || (initialBatchId ? initialBatchId : (user?.role === 'Farm/Producer' ? 'Will be generated on submission' : 'Contact Farm/Producer to create batch first'))}
+            value={formData.batch_id || (initialBatchId ? initialBatchId : (user?.role === 'Farm/Producer' ? 'Generated automatically when you submit' : 'Contact the Producer to create a batch first'))}
             className="form-input"
             readOnly
             disabled
-            style={{ backgroundColor: '#f7fafc', color: '#718096', cursor: 'not-allowed' }}
           />
         </div>
         
@@ -468,7 +511,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         />
         
         <div className="form-group">
-          <label htmlFor="farming_method" className="form-label">Farming Method <span className="mandatory-indicator">*</span></label>
+          <label htmlFor="farming_method" className="form-label">Production Method <span className="mandatory-indicator">*</span></label>
           <select
             id="farming_method"
             name="farming_method"
@@ -477,7 +520,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             className="form-select"
             required
           >
-            <option value="">Select farming method</option>
+            <option value="">Select production method</option>
             {farmingMethods.map(method => (
               <option key={method} value={method.toLowerCase()}>
                 {method}
@@ -507,13 +550,13 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         
         {/* Error/Success message displayed near submit button */}
         {error && (
-          <div className="error-message" style={{ marginBottom: '1rem' }}>
+          <div className="error-message">
             {error}
           </div>
         )}
         
         {successMessage && (
-          <div className="success-message" style={{ marginBottom: '1rem' }}>
+          <div className="success-message">
             {successMessage}
           </div>
         )}
@@ -527,7 +570,7 @@ const FarmEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             ? (initialBatchId ? 'Adding to Batch...' : 'Creating New Batch...') 
             : successMessage
             ? 'Processing...'
-            : (initialBatchId ? 'Add Data to Batch' : 'Submit to Blockchain')
+            : (initialBatchId ? 'Add Data to Batch' : 'Submit Data')
           }
         </button>
       </form>

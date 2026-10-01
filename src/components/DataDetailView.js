@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { FaCopy } from 'react-icons/fa';
+import { FiCheck, FiCheckCircle, FiChevronLeft, FiClock, FiCopy, FiDownload, FiExternalLink, FiMaximize, FiPlus } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
+import { roleLabel } from '../utils/roles';
 import apiService from '../services/api';
 import Header from './Header';
 import Footer from './Footer';
 import QRCodeModal from './QRCodeModal';
-import FarmEntryForm from './FarmEntryForm';
-import ProcessingEntryForm from './ProcessingEntryForm';
-import LogisticsEntryForm from './LogisticsEntryForm';
-import DistributionEntryForm from './DistributionEntryForm';
+import EntryWizard from './entry/EntryWizard';
 import ConsumerEntryForm from './ConsumerEntryForm';
 import '../styles/DataDetailView.css';
 
@@ -57,6 +55,8 @@ const DataDetailView = () => {
           product_type: parsedData.product_type,
           batch_id: batchInfo.batch_id,
           farming_method: parsedData.farming_method,
+          quantity: parsedData.quantity,
+          quantity_unit: parsedData.quantity_unit,
           certifications: parsedData.certifications,
           timestamp: firstDataEntry.created_at,
           status: firstDataEntry.tx_status ? 'verified' : 'pending',
@@ -266,9 +266,9 @@ const DataDetailView = () => {
   };
 
   const handleDataSubmit = (newData) => {
-    // Add the new data to batch history
+    // Add the new data to batch history. The entry wizard keeps showing its
+    // success screen (QR code, IDs) and closes itself via onCancel ("Done").
     setBatchHistory(prev => [...prev, newData]);
-    setShowAddDataForm(false);
   };
 
   const getBatchHistoryDisplayText = (entry) => {
@@ -277,7 +277,7 @@ const DataDetailView = () => {
     
     switch (userRole.toLowerCase()) {
       case 'farm/producer':
-        return `${data.product_type || 'Farm Product'} from ${data.farm_name || 'Unknown Farm'}`;
+        return `${data.product_type || 'Product'} from ${data.farm_name || 'Unknown Site'}`;
       case 'processing/packaging':
         return `${data.packaging_type || 'Processed Product'} from ${data.facility_name || 'Unknown Facility'}`;
       case 'logistics & cold chain monitoring':
@@ -374,14 +374,15 @@ const DataDetailView = () => {
           {/* Simple Header */}
           <div className="simple-header">
             <button onClick={handleBackToDashboard} className="btn btn-outline">
-              ← Back to Dashboard
+              <FiChevronLeft />
+              Back to Dashboard
             </button>
             <h1>Batch Details</h1>
             <div className="status-badge">
               {data.status === 'verified' ? (
-                <span className="status-verified">✅ Verified</span>
+                <span className="chip chip-ok"><FiCheck />Verified</span>
               ) : (
-                <span className="status-pending">⏳ Pending</span>
+                <span className="chip chip-wait"><FiClock />Pending</span>
               )}
             </div>
           </div>
@@ -397,7 +398,7 @@ const DataDetailView = () => {
             </div>
 
             <div className="form-group">
-              <label>Farm Name</label>
+              <label>Producer / Site Name</label>
               <input type="text" value={data.farm_name} readOnly className="form-input" />
             </div>
 
@@ -407,12 +408,19 @@ const DataDetailView = () => {
             </div>
 
             <div className="form-group">
-              <label>Harvest Date</label>
+              <label>Production Date</label>
               <input type="text" value={data.harvest_date} readOnly className="form-input" />
             </div>
 
+            {data.quantity && (
+              <div className="form-group">
+                <label>Quantity</label>
+                <input type="text" value={`${data.quantity} ${data.quantity_unit || ''}`.trim()} readOnly className="form-input" />
+              </div>
+            )}
+
             <div className="form-group">
-              <label>Farming Method</label>
+              <label>Production Method</label>
               <input type="text" value={data.farming_method} readOnly className="form-input" />
             </div>
 
@@ -441,7 +449,7 @@ const DataDetailView = () => {
                     className="copy-btn-icon"
                     title="Copy"
                   >
-                    {copiedHash ? <span className="copy-checkmark">✓</span> : <FaCopy />}
+                    {copiedHash ? <span className="copy-checkmark"><FiCheck /></span> : <FiCopy />}
                     <span className="copy-tooltip">Copy</span>
                   </button>
                 )}
@@ -460,7 +468,7 @@ const DataDetailView = () => {
                 {batchHistory.map((entry, index) => (
                   <div key={entry.id || index} className="history-item-simple">
                     <div className="history-info">
-                      <span className="history-role">{entry.user_role || 'Unknown Role'}</span>
+                      <span className="history-role">{entry.user_role ? roleLabel(entry.user_role) : 'Unknown Role'}</span>
                       <span className="history-date">{new Date(entry.created_at).toLocaleString()}</span>
                     </div>
                     <div className="history-details">
@@ -475,22 +483,27 @@ const DataDetailView = () => {
             {/* Action Buttons */}
             <div className="form-actions">
               <button onClick={handleDownloadQRCode} className="btn btn-primary">
-                📥 Download QR Code
+                <FiDownload />
+                Download QR Code
               </button>
               <button onClick={handleViewQRCode} className="btn btn-secondary">
-                👁️ View QR Code
+                <FiMaximize />
+                View QR Code
               </button>
               <button onClick={handleViewBlockchain} className="btn btn-outline">
-                🔗 Blockchain Explorer
+                <FiExternalLink />
+                Blockchain Explorer
               </button>
               {canAddData() ? (
                 <button onClick={handleAddDataToBatch} className="btn btn-success">
-                  + Add Data to Batch
+                  <FiPlus />
+                  Add Data to Batch
                 </button>
               ) : (
                 user && user.role !== 'Farm/Producer' && batchHistory && batchHistory.length > 0 && (
                   <div className="already-submitted-message">
-                    ✅ You have already submitted data for this batch
+                    <FiCheckCircle />
+                    You have already submitted data for this batch
                   </div>
                 )
               )}
@@ -513,57 +526,26 @@ const DataDetailView = () => {
             {/* Add Data Form */}
             {showAddDataForm && (
               <div className="add-data-form">
-                <h3>Add New Data to Batch</h3>
-                {(() => {
-                  switch (user.role) {
-                    case 'Processing/Packaging':
-                      return (
-                        <ProcessingEntryForm 
-                          onDataSubmit={handleDataSubmit}
-                          initialBatchId={data.batch_id}
-                          userRole={user.role}
-                        />
-                      );
-                    case 'Logistics & Cold Chain Monitoring':
-                      return (
-                        <LogisticsEntryForm 
-                          onDataSubmit={handleDataSubmit}
-                          initialBatchId={data.batch_id}
-                          userRole={user.role}
-                        />
-                      );
-                    case 'Distribution/Retail':
-                      return (
-                        <DistributionEntryForm 
-                          onDataSubmit={handleDataSubmit}
-                          initialBatchId={data.batch_id}
-                          userRole={user.role}
-                        />
-                      );
-                    case 'Consumer Interaction':
-                      return (
-                        <ConsumerEntryForm 
-                          onDataSubmit={handleDataSubmit}
-                          initialBatchId={data.batch_id}
-                          userRole={user.role}
-                        />
-                      );
-                    default:
-                      return (
-                        <FarmEntryForm 
-                          onDataSubmit={handleDataSubmit}
-                          initialBatchId={data.batch_id}
-                          userRole={user.role}
-                        />
-                      );
-                  }
-                })()}
-                <button 
-                  onClick={() => setShowAddDataForm(false)} 
-                  className="btn btn-outline"
-                >
-                  Cancel
-                </button>
+                {user.role === 'Consumer Interaction' ? (
+                  <>
+                    <h3>Add New Data to Batch</h3>
+                    <ConsumerEntryForm
+                      onDataSubmit={handleDataSubmit}
+                      initialBatchId={data.batch_id}
+                      userRole={user.role}
+                    />
+                    <button onClick={() => setShowAddDataForm(false)} className="btn btn-outline">
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <EntryWizard
+                    role={user.role}
+                    initialBatchId={data.batch_id}
+                    onDataSubmit={handleDataSubmit}
+                    onCancel={() => setShowAddDataForm(false)}
+                  />
+                )}
               </div>
             )}
           </div>

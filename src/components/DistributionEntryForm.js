@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FiShoppingBag } from 'react-icons/fi';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
@@ -42,6 +43,8 @@ const DistributionEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
     '2-3 months',
     '6 months',
     '1 year',
+    'More than 1 year',
+    'Not applicable',
     '2+ years'
   ];
 
@@ -100,8 +103,9 @@ const DistributionEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   return (
     <div className="distribution-entry-form">
       <div className="form-header">
-        <h2>🏪 Distribution/Retail Entry</h2>
-        <p>Enter distribution and retail information for your product</p>
+        <div className="icon-tile"><FiShoppingBag /></div>
+        <h2>Distribution & Retail</h2>
+        <p>Record where this batch is stocked and sold</p>
       </div>
       
       <form onSubmit={handleSubmit} className="entry-form">
@@ -114,7 +118,6 @@ const DistributionEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             value={formData.retailer_id}
             className="form-input"
             readOnly
-            style={{ backgroundColor: '#f7fafc', color: '#718096' }}
           />
         </div>
         
@@ -172,7 +175,7 @@ const DistributionEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="shelf_life_remaining" className="form-label">Shelf Life Remaining <span className="mandatory-indicator">*</span></label>
+          <label htmlFor="shelf_life_remaining" className="form-label">Shelf Life / Validity Remaining <span className="mandatory-indicator">*</span></label>
           <select
             id="shelf_life_remaining"
             name="shelf_life_remaining"
@@ -181,7 +184,7 @@ const DistributionEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             className="form-select"
             required
           >
-            <option value="">Select shelf life remaining</option>
+            <option value="">Select remaining shelf life</option>
             {shelfLifeOptions.map(option => (
               <option key={option} value={option}>
                 {option}
@@ -208,7 +211,7 @@ const DistributionEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="display_date" className="form-label">Display Date <span className="mandatory-indicator">*</span></label>
+          <label htmlFor="display_date" className="form-label">Available for Sale Date <span className="mandatory-indicator">*</span></label>
           <input
             type="date"
             id="display_date"

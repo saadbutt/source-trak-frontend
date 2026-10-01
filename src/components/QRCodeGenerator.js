@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiCheck, FiDownload } from 'react-icons/fi';
 import QRCode from 'qrcode.react';
 import '../styles/QRCode.css';
 
@@ -41,7 +42,7 @@ const QRCodeGenerator = ({ data }) => {
               <span className="value">{data.batch_id}</span>
             </div>
             <div className="qr-detail-item">
-              <span className="label">Farm:</span>
+              <span className="label">Site:</span>
               <span className="value">{data.farm_name}</span>
             </div>
             <div className="qr-detail-item">
@@ -49,16 +50,17 @@ const QRCodeGenerator = ({ data }) => {
               <span className="value">{data.product_type}</span>
             </div>
             <div className="qr-detail-item">
-              <span className="label">Harvest Date:</span>
+              <span className="label">Production Date:</span>
               <span className="value">{new Date(data.harvest_date).toLocaleDateString()}</span>
             </div>
             <div className="qr-detail-item">
               <span className="label">Status:</span>
-              <span className="value status-verified">✓ Verified</span>
+              <span className="chip chip-ok"><FiCheck />Verified</span>
             </div>
           </div>
           
           <button onClick={downloadQRCode} className="btn btn-secondary download-btn">
+            <FiDownload />
             Download QR Code
           </button>
         </div>

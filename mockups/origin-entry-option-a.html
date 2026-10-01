@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Origin Entry — Option A, all steps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F8FC; --surface-2:#F6F9FE; --ink:#0F2236; --ink-2:#42566B; --muted:#7C8DA1;
+  --line:#EAEFF6; --line-2:#E2E9F2; --primary:#1877F2; --primary-deep:#0B5CDB; --tint:#ECF3FE; --ring:#BBD3F4;
+  --success:#1E9E5A; --success-tint:#E7F6ED; --amber-tint:#FBF1DC; --amber-ink:#9A6B00; --danger:#D33A4B;
+  --hero:linear-gradient(135deg,#2F8AFF,#0B5CDB);
+  --shadow:0 4px 16px rgba(15,34,54,.06); --shadow-blue:0 10px 22px -8px rgba(24,119,242,.55);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,-apple-system,'Segoe UI',sans-serif;background:#DDE5EF;color:var(--ink);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit}
+svg{flex-shrink:0}
+[hidden]{display:none!important}
+
+/* mock switcher (not part of the design) */
+.switcher{position:sticky;top:0;z-index:50;background:#0F2236;color:#fff;display:flex;align-items:center;gap:8px;padding:10px 24px;flex-wrap:wrap}
+.switcher strong{font-size:14px;margin-right:12px}
+.switcher button{border:none;background:rgba(255,255,255,.1);color:#fff;padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer}
+.switcher button.on{background:#1877F2}
+.switcher .hint{margin-left:auto;font-size:12px;opacity:.7}
+.stage{padding:28px;overflow-x:auto}
+.mock{width:1440px;min-height:900px;margin:0 auto;background:var(--bg);border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(15,34,54,.18)}
+.notes{max-width:1440px;margin:18px auto 0;font-size:14px;color:#42566B;line-height:1.6}
+.notes b{color:#0F2236}
+
+/* app chrome */
+.topbar{height:68px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 48px}
+.brand{font-size:22px;font-weight:500;letter-spacing:-.5px}.brand b{font-weight:800}
+.me{display:flex;align-items:center;gap:10px;border:1px solid var(--line-2);border-radius:14px;padding:5px 12px 5px 5px;font-weight:700;font-size:14px}
+.av{width:34px;height:34px;border-radius:11px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.page{padding:28px 48px 36px}
+.crumb{font-size:13px;font-weight:600;color:var(--muted)}.crumb span{color:var(--ink-2)}
+h1{font-size:30px;font-weight:800;letter-spacing:-.8px;margin-top:6px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.btn{height:46px;padding:0 20px;border-radius:14px;border:none;font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;white-space:nowrap}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:var(--shadow-blue)}
+.btn-tint{background:var(--tint);color:var(--primary-deep)}
+.btn-ghost{background:#fff;border:1.5px solid var(--line-2);color:var(--ink-2)}
+.btn-lg{height:50px;padding:0 24px;font-size:15px}
+.lbl{display:block;font-size:14px;font-weight:600;margin-bottom:8px}
+.lbl .opt{font-size:12px;color:var(--muted);font-weight:500;margin-left:4px}
+.lbl .req{color:var(--danger)}
+.help{font-size:13px;color:var(--muted);font-weight:500;margin-top:7px}
+.inp{width:100%;height:52px;border:1.5px solid var(--line-2);border-radius:14px;background:var(--surface-2);padding:0 16px;font-size:15px;font-weight:500;color:var(--ink)}
+.inp.focus{border-color:var(--primary);background:#fff;box-shadow:0 4px 12px rgba(24,119,242,.16)}
+.inp::placeholder{color:#9AAABE}
+.qty{display:flex}.qty .inp{border-radius:14px 0 0 14px}
+.qty select{height:52px;width:120px;border:1.5px solid var(--line-2);border-left:none;border-radius:0 14px 14px 0;background:#fff;padding:0 12px;font-weight:600;color:var(--ink)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.chip-ok{background:var(--success-tint);color:var(--success)}.chip-wait{background:var(--amber-tint);color:var(--amber-ink)}.chip-p{background:var(--tint);color:var(--primary-deep)}
+.mono{font-family:'SF Mono',Menlo,monospace}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+
+/* layout */
+.grid{display:grid;grid-template-columns:260px minmax(0,1fr) 340px;gap:22px;margin-top:22px}
+.step{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px}
+.step .n{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;background:var(--surface-2);border:1.5px solid var(--line-2);color:var(--muted)}
+.step b{display:block;font-size:14px;color:var(--ink-2)}.step small{font-size:12px;color:var(--muted);font-weight:500}
+.step.done .n{background:var(--success-tint);border:none;color:var(--success)}.step.done b{color:var(--ink)}
+.step.on{background:var(--tint)}.step.on .n{background:var(--primary);border:none;color:#fff}.step.on b{color:var(--primary-deep)}.step.on small{color:var(--ink-2)}
+.panel-h{padding:26px 32px 0}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.6px;color:var(--primary);text-transform:uppercase}
+.panel-h h2{font-size:22px;font-weight:800;letter-spacing:-.4px;margin:6px 0 4px}
+.panel-h p{font-size:14px;color:var(--muted);font-weight:500}
+.progress{height:6px;background:var(--line);border-radius:99px;margin-top:18px}.progress div{height:6px;background:var(--primary);border-radius:99px;transition:width .3s}
+.panel-b{padding:26px 32px;display:flex;flex-direction:column;gap:22px;flex:1}
+.panel-f{border-top:1px solid var(--line);padding:18px 32px;display:flex;justify-content:space-between;align-items:center}
+.map{height:170px;position:relative;background:#E8F0FA;background-image:linear-gradient(#DCE7F5 1px,transparent 1px),linear-gradient(90deg,#DCE7F5 1px,transparent 1px);background-size:32px 32px}
+.pin{position:absolute;left:46%;top:32%;width:40px;height:40px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 10px rgba(24,119,242,.18)}
+
+/* choice tiles & chips */
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.tile{border:1.5px solid var(--line-2);background:var(--surface-2);border-radius:14px;padding:14px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:10px;font-size:13px;font-weight:700;color:var(--ink-2);position:relative}
+.tile .ti{width:34px;height:34px;border-radius:10px;background:#fff;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.tile.on{border-color:var(--primary);background:var(--tint);color:var(--primary-deep)}
+.tile.on .ti{background:var(--primary);color:#fff}
+.tile.on::after{content:'';position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;background:var(--primary) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/11px no-repeat}
+.pills{display:flex;flex-wrap:wrap;gap:8px}
+.pill{height:40px;padding:0 14px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--surface-2);font-size:13px;font-weight:600;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px}
+.pill.on{border-color:var(--primary);background:var(--tint);color:var(--primary-deep)}
+
+/* review */
+.rev{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.rev-h{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface-2);border-bottom:1px solid var(--line)}
+.rev-h b{font-size:14px}.rev-h a{font-size:13px;font-weight:700;color:var(--primary);text-decoration:none}
+.rev-b{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px;padding:14px 16px}
+.rev-b div span{display:block;font-size:12px;color:var(--muted);font-weight:600}.rev-b div b{font-size:14px;font-weight:700}
+.consent{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:var(--amber-tint);color:var(--amber-ink);font-size:13px;font-weight:600;line-height:19px}
+
+/* preview */
+.preview-head{background:var(--hero);padding:18px 20px;color:#fff;display:flex;gap:14px;align-items:center;border-radius:16px 16px 0 0}
+.preview-head .ic{width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:13px}
+.row:last-child{border-bottom:none}.row>span:first-child{color:var(--muted);font-weight:600;flex-shrink:0}.row>span:last-child{font-weight:700;text-align:right}
+.row .empty{color:#B4C1D1!important;font-weight:500!important}
+.journey{display:flex;flex-direction:column;gap:12px}
+.journey div{display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;color:var(--muted)}
+.journey i{width:12px;height:12px;border-radius:50%;background:var(--line-2)}
+.journey .on{color:var(--ink);font-weight:700}.journey .on i{background:var(--primary);box-shadow:0 0 0 4px var(--tint)}
+.journey .ok i{background:var(--success);box-shadow:0 0 0 4px var(--success-tint)}
+
+/* success */
+.success{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:22px;margin-top:22px}
+.s-badge{width:72px;height:72px;border-radius:22px;background:var(--success-tint);color:var(--success);display:flex;align-items:center;justify-content:center}
+.qr{width:220px;height:220px;display:grid;grid-template-columns:repeat(21,1fr);gap:0;padding:14px;background:#fff;border:1px solid var(--line);border-radius:16px}
+.qr i{background:#0F2236}.qr i.o{background:transparent}
+</style>
+</head>
+<body>
+
+<div class="switcher">
+  <strong>Option A — Guided steps</strong>
+  <button data-go="1">1 · Product</button>
+  <button data-go="2">2 · Origin &amp; location</button>
+  <button data-go="3">3 · Method &amp; certification</button>
+  <button data-go="4">4 · Review &amp; submit</button>
+  <button data-go="5">Submitted</button>
+  <span class="hint">Click Continue / Back inside the mock too · sample data</span>
+</div>
+
+<div class="stage">
+<section class="mock">
+  <header class="topbar"><div class="brand">source<b>trak</b></div><div class="me"><div class="av">M</div>mark<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C8DA1" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div></header>
+
+  <div class="page">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between">
+      <div><div class="crumb">Batches / <span>New batch</span></div><h1 id="title">Record a new batch</h1></div>
+      <div id="topActions" style="display:flex;gap:10px"><button class="btn btn-ghost">Cancel</button><button class="btn btn-tint">Save draft</button></div>
+    </div>
+
+    <!-- ============ STEPS 1–4 ============ -->
+    <div class="grid" id="flow">
+      <!-- rail -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card" style="padding:10px" id="rail"></div>
+        <div class="card" style="padding:16px;display:flex;gap:12px;box-shadow:none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1877F2" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          <div style="font-size:13px;line-height:19px;color:var(--ink-2);font-weight:500">Origin ID and Batch ID are generated for you. Your progress is saved as a draft until you submit.</div>
+        </div>
+      </div>
+
+      <!-- current step -->
+      <div class="card" style="display:flex;flex-direction:column">
+        <div class="panel-h">
+          <div class="eyebrow" id="eyebrow">Step 1 of 4</div>
+          <h2 id="q"></h2>
+          <p id="qsub"></p>
+          <div class="progress"><div id="bar"></div></div>
+        </div>
+
+        <!-- STEP 1 -->
+        <div class="panel-b" data-step="1">
+          <div>
+            <label class="lbl">Product type <span class="req">*</span></label>
+            <input class="inp focus" value="Arabica coffee beans">
+            <div class="help">Use the name buyers will recognise, e.g. coffee beans, cotton fabric, circuit boards.</div>
+          </div>
+          <div class="g2">
+            <div>
+              <label class="lbl">Quantity <span class="req">*</span></label>
+              <div class="qty"><input class="inp" value="500"><select><option>kg</option><option>tonnes</option><option>lb</option><option>litres</option><option>units</option><option>boxes</option><option>pallets</option></select></div>
+            </div>
+            <div>
+              <label class="lbl">Production date <span class="req">*</span></label>
+              <input class="inp" value="28 Sep 2026">
+              <div class="help">The date this batch was made or harvested.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="panel-b" data-step="2" hidden>
+          <div>
+            <label class="lbl">Producer / site name<span class="opt">Optional</span></label>
+            <input class="inp" value="Green Valley Estate">
+          </div>
+          <div>
+            <label class="lbl">Location<span class="opt">Optional</span></label>
+            <div style="border:1.5px solid var(--line-2);border-radius:14px;overflow:hidden">
+              <div class="map"><div class="pin"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+                <div style="position:absolute;left:14px;bottom:12px;font-size:12px;font-weight:600;color:var(--ink-2);background:#fff;border-radius:8px;padding:4px 8px">[Map preview]</div></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px">
+                <input class="inp mono" style="height:42px;max-width:300px;font-size:14px" value="6.8721, 38.4012">
+                <button class="btn btn-tint" style="height:40px;border-radius:10px;font-size:13px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Use my current location</button>
+              </div>
+            </div>
+            <div class="help">Buyers see this pin when they scan the batch QR code. Leave blank to hide it.</div>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="panel-b" data-step="3" hidden>
+          <div>
+            <label class="lbl">How was it produced? <span class="req">*</span></label>
+            <div class="tiles">
+              <div class="tile on"><div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22V12"/><path d="M12 12C12 7 8 4 3 4c0 5 4 8 9 8z"/><path d="M12 12c0-4 3-7 8-7 0 4-3 7-8 7z"/></svg></div>Grown / Harvested</div>
+              <div class="tile"><div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 20h20V9l-6 4V9l-6 4V4H2z"/></svg></div>Manufactured</div>
+              <div class="tile"><div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>Assembled</div>
+              <div class="tile"><div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68 1.65 1.65 0 0 0 10 3.17V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>Processed</div>
+              <div class="tile"><div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 20 2 20"/></svg></div>Extracted / Mined</div>
+              <div class="tile"><div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>Handcrafted</div>
+              <div class="tile"><div class="ti"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></div>Recycled / Upcycled</div>
+            </div>
+          </div>
+          <div>
+            <label class="lbl">Certifications <span class="req">*</span><span class="opt">Pick all that apply, or None</span></label>
+            <div class="pills">
+              <span class="pill">None</span>
+              <span class="pill on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Organic</span>
+              <span class="pill on"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>Fair Trade</span>
+              <span class="pill">ISO 9001 (Quality)</span><span class="pill">ISO 14001 (Environmental)</span><span class="pill">ISO 22000 / HACCP</span><span class="pill">FSC (Forestry)</span><span class="pill">CE Marking</span><span class="pill">Halal</span><span class="pill">Kosher</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4 -->
+        <div class="panel-b" data-step="4" hidden style="gap:14px">
+          <div class="rev">
+            <div class="rev-h"><b>Product</b><a href="#" data-go="1">Edit</a></div>
+            <div class="rev-b"><div><span>Product type</span><b>Arabica coffee beans</b></div><div><span>Quantity</span><b>500 kg</b></div><div><span>Production date</span><b>28 Sep 2026</b></div></div>
+          </div>
+          <div class="rev">
+            <div class="rev-h"><b>Origin &amp; location</b><a href="#" data-go="2">Edit</a></div>
+            <div class="rev-b"><div><span>Producer / site</span><b>Green Valley Estate</b></div><div><span>Location</span><b class="mono" style="font-size:13px">6.8721, 38.4012</b></div></div>
+          </div>
+          <div class="rev">
+            <div class="rev-h"><b>Method &amp; certification</b><a href="#" data-go="3">Edit</a></div>
+            <div class="rev-b"><div><span>Production method</span><b>Grown / Harvested</b></div><div><span>Certifications</span><b>Organic, Fair Trade</b></div></div>
+          </div>
+          <div class="consent">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            This record is written to the blockchain and can't be edited after you submit. Check the details above first.
+          </div>
+        </div>
+
+        <div class="panel-f">
+          <button class="btn btn-ghost" id="back">Back</button>
+          <button class="btn btn-primary btn-lg" id="next"></button>
+        </div>
+      </div>
+
+      <!-- preview -->
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="preview-head"><div class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+            <div><div style="font-size:12px;font-weight:600;opacity:.9">Batch preview</div><div style="font-size:18px;font-weight:800;letter-spacing:-.3px">Arabica coffee beans</div></div></div>
+          <div style="padding:6px 20px 14px" id="previewRows"></div>
+        </div>
+        <div class="card" style="padding:18px 20px;box-shadow:none">
+          <div style="font-size:14px;font-weight:800;margin-bottom:14px">Journey of this batch</div>
+          <div class="journey">
+            <div class="on"><i></i>Origin<span style="margin-left:auto;font-size:12px;color:var(--primary-deep)">You are here</span></div>
+            <div><i></i>Processing &amp; packaging</div><div><i></i>Logistics &amp; transport</div><div><i></i>Distribution &amp; retail</div>
+          </div>
+        </div>
+        <div style="border:1.5px dashed var(--ring);border-radius:16px;padding:18px 20px;display:flex;gap:14px;align-items:center;background:#fff">
+          <div style="width:56px;height:56px;border-radius:12px;background:var(--surface-2);display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7C8DA1" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><line x1="14" y1="14" x2="21" y2="14"/><line x1="14" y1="18" x2="21" y2="18"/></svg></div>
+          <div style="font-size:13px;line-height:19px;color:var(--ink-2);font-weight:500">The batch QR code appears after you submit.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ SUBMITTED ============ -->
+    <div class="success" id="done" hidden>
+      <div class="card" style="padding:36px 40px">
+        <div style="display:flex;gap:20px;align-items:center">
+          <div class="s-badge"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div>
+            <h2 style="font-size:26px;font-weight:800;letter-spacing:-.5px">Batch recorded</h2>
+            <p style="font-size:15px;color:var(--ink-2);font-weight:500;margin-top:4px">Arabica coffee beans · 500 kg is now stage 1 of its journey.</p>
+          </div>
+          <span class="chip chip-wait" style="margin-left:auto;font-size:12px;padding:6px 12px">Confirming on blockchain…</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px">
+          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:14px 16px"><div style="font-size:12px;color:var(--muted);font-weight:600">Batch ID</div><div class="mono" style="font-size:14px;font-weight:700;margin-top:4px">7f3a2c19-…-b20e</div></div>
+          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:14px 16px"><div style="font-size:12px;color:var(--muted);font-weight:600">Origin ID</div><div class="mono" style="font-size:14px;font-weight:700;margin-top:4px">589813b0-…-f5ea3</div></div>
+          <div style="background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:14px 16px"><div style="font-size:12px;color:var(--muted);font-weight:600">Transaction</div><div class="mono" style="font-size:14px;font-weight:700;margin-top:4px;color:var(--amber-ink)">Pending</div></div>
+        </div>
+
+        <div style="margin-top:28px">
+          <div style="font-size:15px;font-weight:800;margin-bottom:14px">What happens next</div>
+          <div class="journey">
+            <div class="ok" style="color:var(--ink);font-weight:700"><i></i>Origin — recorded by you</div>
+            <div><i></i>Share the QR with your processor so they can add their stage</div>
+            <div><i></i>Logistics and retail add theirs the same way</div>
+            <div><i></i>Buyers scan the QR to see the whole journey</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:30px;padding-top:24px;border-top:1px solid var(--line)">
+          <button class="btn btn-primary btn-lg">View batch</button>
+          <button class="btn btn-tint btn-lg" data-go="1">Record another batch</button>
+          <button class="btn btn-ghost btn-lg" style="margin-left:auto">Blockchain explorer</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding:28px;display:flex;flex-direction:column;align-items:center;text-align:center">
+        <div style="font-size:16px;font-weight:800">Batch QR code</div>
+        <div style="font-size:13px;color:var(--muted);font-weight:500;margin:4px 0 18px">Print it on packaging or share it with the next stage.</div>
+        <div class="qr" id="qr"></div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:8px">[Illustrative QR]</div>
+        <div style="display:flex;gap:8px;margin-top:18px;width:100%">
+          <button class="btn btn-tint" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download</button>
+          <button class="btn btn-ghost" style="flex:1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="notes" id="note"></div>
+</div>
+
+<script>
+var STEPS = [
+  null,
+  { name:'Product', q:'What are you recording?', sub:'Start with the product and how much of it is in this batch.', summary:'Coffee beans · 500 kg', next:'Continue to origin',
+    note:'<b>Step 1 · Product.</b> The three fields that define the batch: product type, quantity (number + unit) and production date. The preview on the right fills in live as you type.' },
+  { name:'Origin & location', q:'Where was this batch produced?', sub:'Buyers see this location when they scan the batch QR code.', summary:'Green Valley Estate', next:'Continue to method',
+    note:'<b>Step 2 · Origin &amp; location.</b> Both fields are optional. "Use my current location" fills the coordinates and drops the map pin (the map is a placeholder in the mock).' },
+  { name:'Method & certification', q:'How was it produced?', sub:'Tap to choose. These appear as trust badges on the product page.', summary:'Grown · Organic, Fair Trade', next:'Review batch',
+    note:'<b>Step 3 · Method &amp; certification.</b> Dropdowns become tappable tiles and chips. Certifications allow several picks, stored as one comma-separated value in the existing <code>certifications</code> field, so no backend change is needed.' },
+  { name:'Review & submit', q:'Check the details', sub:'Everything below will be recorded for this batch.', summary:'Check before recording', next:'Submit Data',
+    note:'<b>Step 4 · Review &amp; submit.</b> A read-only summary grouped by step, with Edit links that jump back. A warning explains the record can\'t be changed after submission. This is the only step that calls the API.' }
+];
+var PREVIEW = [
+  ['Quantity', 1, '500 kg'], ['Production date', 1, '28 Sep 2026'], ['Site', 2, 'Green Valley Estate'],
+  ['Method', 3, 'Grown / Harvested'], ['Certifications', 3, 'Organic, Fair Trade'], ['Batch ID', 0, '<span class="chip chip-p">Auto-generated</span>']
+];
+var DONE_NOTE = '<b>Submitted.</b> Replaces today\'s read-only form after submit: a clear confirmation, the IDs, blockchain status, the QR code with Download / Print, and what happens next in the journey.';
+var check = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>';
+
+var cur = 1;
+function go(n){
+  cur = n;
+  var done = n === 5;
+  document.getElementById('flow').hidden = done;
+  document.getElementById('done').hidden = !done;
+  document.getElementById('topActions').style.visibility = done ? 'hidden' : 'visible';
+  document.getElementById('title').textContent = done ? 'New batch' : 'Record a new batch';
+  document.querySelectorAll('.switcher [data-go]').forEach(function(b){ b.classList.toggle('on', +b.dataset.go === n); });
+  document.getElementById('note').innerHTML = done ? DONE_NOTE : STEPS[n].note;
+  if (done) return;
+
+  var s = STEPS[n];
+  document.getElementById('eyebrow').textContent = 'Step ' + n + ' of 4';
+  document.getElementById('q').textContent = s.q;
+  document.getElementById('qsub').textContent = s.sub;
+  document.getElementById('bar').style.width = (n * 25) + '%';
+  document.querySelectorAll('[data-step]').forEach(function(p){ p.hidden = +p.dataset.step !== n; });
+  document.getElementById('back').style.visibility = n === 1 ? 'hidden' : 'visible';
+  document.getElementById('next').innerHTML = s.next + (n < 4 ? ' <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>' : '');
+
+  var rail = '';
+  for (var i = 1; i <= 4; i++) {
+    var st = i < n ? 'done' : i === n ? 'on' : '';
+    var sm = i < n ? STEPS[i].summary : i === n ? 'In progress' : (i === 4 ? 'Check before recording' : 'Not started');
+    rail += '<div class="step ' + st + '"><div class="n">' + (i < n ? check : i) + '</div><div><b>' + STEPS[i].name.replace('&','&amp;') + '</b><small>' + sm + '</small></div></div>';
+  }
+  document.getElementById('rail').innerHTML = rail;
+
+  document.getElementById('previewRows').innerHTML = PREVIEW.map(function(r){
+    var filled = r[1] <= n;
+    return '<div class="row"><span>' + r[0] + '</span><span' + (filled ? '' : ' class="empty"') + '>' + (filled ? r[2] : '—') + '</span></div>';
+  }).join('');
+}
+document.addEventListener('click', function(e){
+  var t = e.target.closest('[data-go]');
+  if (t) { e.preventDefault(); go(+t.dataset.go); window.scrollTo(0,0); }
+});
+document.getElementById('next').onclick = function(){ go(cur + 1); };
+document.getElementById('back').onclick = function(){ go(cur - 1); };
+
+// illustrative QR pattern (not a real code)
+(function(){
+  var cells = '', seed = 7;
+  function rnd(){ seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
+  function finder(r, c){ var R=[[0,0],[0,14],[14,0]]; for (var k=0;k<3;k++){ var y=r-R[k][0], x=c-R[k][1]; if (y>=0&&y<7&&x>=0&&x<7) return (y===0||y===6||x===0||x===6||(y>=2&&y<=4&&x>=2&&x<=4)) ? 1 : 0; } return -1; }
+  for (var r=0;r<21;r++) for (var c=0;c<21;c++){ var f=finder(r,c); var on = f===-1 ? rnd()>.5 : f===1; cells += '<i' + (on ? '' : ' class="o"') + '></i>'; }
+  document.getElementById('qr').innerHTML = cells;
+})();
+
+go(1);
+</script>
+</body>
+</html>

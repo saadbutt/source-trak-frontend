@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FiArrowRight, FiCheck, FiClock, FiInbox, FiPackage } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/DataHistory.css';
 
@@ -16,10 +17,10 @@ const DataHistory = ({ farmData }) => {
   };
 
   const getStatusBadge = (status) => {
-    return (
-      <span className={`status-badge status-${status}`}>
-        {status === 'verified' ? '✓ Verified' : status}
-      </span>
+    return status === 'verified' ? (
+      <span className="chip chip-ok"><FiCheck />Verified</span>
+    ) : (
+      <span className="chip chip-wait"><FiClock />Pending</span>
     );
   };
 
@@ -29,11 +30,12 @@ const DataHistory = ({ farmData }) => {
     switch (userRole.toLowerCase()) {
       case 'farm/producer':
         return {
-          title: entry.product_type || 'Farm Product',
+          title: entry.product_type || 'Product',
           fields: [
-            { label: 'Farm:', value: entry.farm_name },
-            { label: 'Harvest Date:', value: entry.harvest_date ? formatDate(entry.harvest_date) : 'N/A' },
-            { label: 'Farming Method:', value: entry.farming_method },
+            { label: 'Site:', value: entry.farm_name },
+            { label: 'Quantity:', value: entry.quantity ? `${entry.quantity} ${entry.quantity_unit || ''}`.trim() : 'N/A' },
+            { label: 'Produced:', value: entry.harvest_date ? formatDate(entry.harvest_date) : 'N/A' },
+            { label: 'Method:', value: entry.farming_method },
             { label: 'Certifications:', value: entry.certifications }
           ]
         };
@@ -64,7 +66,7 @@ const DataHistory = ({ farmData }) => {
             { label: 'Store Location:', value: entry.store_location },
             { label: 'Inventory ID:', value: entry.inventory_id },
             { label: 'Shelf Life:', value: entry.shelf_life_remaining },
-            { label: 'Display Date:', value: entry.display_date ? formatDate(entry.display_date) : 'N/A' }
+            { label: 'On Sale:', value: entry.display_date ? formatDate(entry.display_date) : 'N/A' }
           ]
         };
       case 'consumer interaction':
@@ -102,10 +104,10 @@ const DataHistory = ({ farmData }) => {
 
       {farmData.length === 0 ? (
         <div className="no-data">
-          <div className="no-data-icon">📊</div>
+          <div className="no-data-icon"><FiInbox /></div>
           <h3>No Data Found</h3>
           <p>
-            You haven't submitted any farm data yet. Start by adding your first entry!
+            You haven't submitted any data yet. Start by adding your first entry!
           </p>
         </div>
       ) : (
@@ -118,7 +120,11 @@ const DataHistory = ({ farmData }) => {
                 className="data-card"
               >
                 <div className="card-header">
-                  <h3 className="product-name">{displayData.title}</h3>
+                  <div className="card-thumb"><FiPackage /></div>
+                  <div className="card-title">
+                    <h3 className="product-name">{displayData.title}</h3>
+                    <span className="card-sub">Submitted {formatDate(entry.timestamp)}</span>
+                  </div>
                   {getStatusBadge(entry.status)}
                 </div>
                 
@@ -133,10 +139,6 @@ const DataHistory = ({ farmData }) => {
                     <span className="label">Batch ID:</span>
                     <span className="value batch-id">{entry.batch_id}</span>
                   </div>
-                  <div className="data-row">
-                    <span className="label">Submitted:</span>
-                    <span className="value">{formatDate(entry.timestamp)}</span>
-                  </div>
                 </div>
               
                 <div className="card-footer">
@@ -144,7 +146,8 @@ const DataHistory = ({ farmData }) => {
                     className="view-details-btn"
                     onClick={() => navigate(`/batch/${entry.batch_id}`)}
                   >
-                    View Details
+                    View details
+                    <FiArrowRight />
                   </button>
                 </div>
               </div>

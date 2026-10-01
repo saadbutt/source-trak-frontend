@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FiUsers } from 'react-icons/fi';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
@@ -102,8 +103,9 @@ const ConsumerEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   return (
     <div className="consumer-entry-form">
       <div className="form-header">
-        <h2>👥 Consumer Interaction Entry</h2>
-        <p>Enter consumer interaction and feedback information</p>
+        <div className="icon-tile"><FiUsers /></div>
+        <h2>Consumer Feedback</h2>
+        <p>Record a customer's scan and feedback for this product</p>
       </div>
       
       <form onSubmit={handleSubmit} className="entry-form">
@@ -116,7 +118,6 @@ const ConsumerEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             value={formData.qrid}
             className="form-input"
             readOnly
-            style={{ backgroundColor: '#f7fafc', color: '#718096' }}
           />
         </div>
         
@@ -172,7 +173,7 @@ const ConsumerEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             value={formData.consumer_feedback}
             onChange={handleChange}
             className="form-textarea"
-            placeholder="e.g., Great product quality, fresh taste, would buy again"
+            placeholder="e.g., Great quality, arrived in perfect condition, would buy again"
             rows="4"
             required
           />

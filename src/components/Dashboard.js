@@ -2,13 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
-import { FaDatabase, FaCheckCircle } from 'react-icons/fa';
+import { FiBox, FiCheckCircle } from 'react-icons/fi';
 import Header from './Header';
 import Footer from './Footer';
-import FarmEntryForm from './FarmEntryForm';
-import ProcessingEntryForm from './ProcessingEntryForm';
-import LogisticsEntryForm from './LogisticsEntryForm';
-import DistributionEntryForm from './DistributionEntryForm';
+import EntryWizard from './entry/EntryWizard';
 import ConsumerEntryForm from './ConsumerEntryForm';
 import DataHistory from './DataHistory';
 import '../styles/Dashboard.css';
@@ -65,6 +62,8 @@ const Dashboard = () => {
             harvest_date: data.harvest_date,
             product_type: data.product_type,
             farming_method: data.farming_method,
+            quantity: data.quantity,
+            quantity_unit: data.quantity_unit,
             certifications: data.certifications,
             // Processing fields
             processor_id: data.processor_id,
@@ -145,7 +144,7 @@ const Dashboard = () => {
               <>
                 <div className="stat-card stat-card-primary">
                   <div className="stat-icon">
-                    <FaDatabase />
+                    <FiBox />
                   </div>
                   <div className="stat-content">
                     <h3>{stats.totalEntries}</h3>
@@ -154,7 +153,7 @@ const Dashboard = () => {
                 </div>
                 <div className="stat-card stat-card-secondary">
                   <div className="stat-icon">
-                    <FaCheckCircle />
+                    <FiCheckCircle />
                   </div>
                   <div className="stat-content">
                     <h3>{stats.verifiedEntries}</h3>
@@ -196,7 +195,7 @@ const Dashboard = () => {
 
           {/* Error message displayed near content area */}
           {error && (
-            <div className="error-message" style={{ marginBottom: '1rem', textAlign: 'center' }}>
+            <div className="error-message">
               {error}
             </div>
           )}
@@ -204,20 +203,9 @@ const Dashboard = () => {
           {/* Tab Content */}
           <div className="tab-content">
             {activeTab === 'entry' && (
-              (() => {
-                switch (user.role) {
-                  case 'Processing/Packaging':
-                    return <ProcessingEntryForm onDataSubmit={handleDataSubmit} />;
-                  case 'Logistics & Cold Chain Monitoring':
-                    return <LogisticsEntryForm onDataSubmit={handleDataSubmit} />;
-                  case 'Distribution/Retail':
-                    return <DistributionEntryForm onDataSubmit={handleDataSubmit} />;
-                  case 'Consumer Interaction':
-                    return <ConsumerEntryForm onDataSubmit={handleDataSubmit} />;
-                  default:
-                    return <FarmEntryForm onDataSubmit={handleDataSubmit} />;
-                }
-              })()
+              user.role === 'Consumer Interaction'
+                ? <ConsumerEntryForm onDataSubmit={handleDataSubmit} />
+                : <EntryWizard key={user.role} role={user.role} onDataSubmit={handleDataSubmit} />
             )}
             {activeTab === 'history' && (
               <DataHistory farmData={farmData} />

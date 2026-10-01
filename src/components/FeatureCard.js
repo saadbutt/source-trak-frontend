@@ -4,7 +4,7 @@ import '../styles/FeatureCard.css';
 const FeatureCard = ({ icon, title, description }) => {
   return (
     <div className="feature-card">
-      <div className="feature-icon">
+      <div className="icon-tile">
         {icon}
       </div>
       <div className="feature-content">

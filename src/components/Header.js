@@ -1,9 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { FiAward, FiChevronDown, FiHome, FiLogOut, FiArrowRight } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
+import { roleLabel } from '../utils/roles';
 import '../styles/Header.css';
 
 const AUTH_ROUTES = ['/login', '/signup', '/verify-email', '/forgot-password', '/reset-password'];
+
+const initialsOf = (name) => {
+  if (!name) return 'U';
+  const parts = name.trim().split(/\s+/).slice(0, 2);
+  return parts.map((p) => p[0]?.toUpperCase() ?? '').join('') || 'U';
+};
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -52,10 +60,10 @@ const Header = () => {
                 onClick={toggleProfileDropdown}
               >
                 <div className="profile-avatar">
-                  {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                  {initialsOf(user?.name)}
                 </div>
                 <span className="profile-name">{user?.name || 'User'}</span>
-                <span className="dropdown-arrow">▼</span>
+                <span className={`dropdown-arrow ${showProfileDropdown ? 'open' : ''}`}><FiChevronDown size={16} /></span>
               </button>
               
               {showProfileDropdown && (
@@ -63,7 +71,7 @@ const Header = () => {
                   <div className="dropdown-header">
                     <div className="user-info">
                       <div className="user-name">{user?.name || 'User'}</div>
-                      <div className="user-role">{user?.role || 'Unknown Role'}</div>
+                      <div className="user-role"><FiAward size={13} />{user?.role ? roleLabel(user.role) : 'Unknown Role'}</div>
                       <div className="user-email">{user?.email || 'No email'}</div>
                     </div>
                   </div>
@@ -73,14 +81,14 @@ const Header = () => {
                     className="dropdown-item"
                     onClick={() => setShowProfileDropdown(false)}
                   >
-                    <span className="dropdown-icon">🏠</span>
+                    <span className="dropdown-icon"><FiHome size={16} /></span>
                     Dashboard
                   </Link>
                   <button 
-                    className="dropdown-item"
+                    className="dropdown-item danger"
                     onClick={handleLogout}
                   >
-                    <span className="dropdown-icon">🚪</span>
+                    <span className="dropdown-icon"><FiLogOut size={16} /></span>
                     Logout
                   </button>
                 </div>
@@ -88,9 +96,15 @@ const Header = () => {
             </div>
           </div>
         ) : onAuthRoute ? null : (
-          <Link to="/login" className="btn-get-started">
-            Get Started
-          </Link>
+          <div className="header-auth">
+            <Link to="/login" className="btn-sign-in">
+              Sign in
+            </Link>
+            <Link to="/signup" className="btn-get-started">
+              Sign up
+              <FiArrowRight size={16} />
+            </Link>
+          </div>
         )}
       </div>
     </header>

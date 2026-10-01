@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FiPackage } from 'react-icons/fi';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
@@ -34,16 +35,18 @@ const ProcessingEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   const [submittedData, setSubmittedData] = useState(null);
   const [error, setError] = useState('');
 
+  // Industry-neutral options; the backend stores packaging_type as free text.
   const packagingTypes = [
-    'Plastic Bag',
-    'Cardboard Box',
-    'Glass Jar',
-    'Metal Can',
-    'Vacuum Sealed',
-    'Modified Atmosphere',
-    'Biodegradable',
-    'Recyclable',
+    'Cardboard Box / Carton',
+    'Plastic Wrap / Bag',
+    'Pallet',
+    'Crate',
+    'Bottle / Jar',
+    'Drum / Barrel',
     'Bulk Container',
+    'Vacuum Sealed',
+    'Recyclable',
+    'Biodegradable',
     'Individual Portions'
   ];
 
@@ -55,17 +58,18 @@ const ProcessingEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
     'Requires Retest'
   ];
 
+  // Cross-industry certifications; stored as free text in processing_certifications.
   const processingCertifications = [
-    'HACCP',
-    'ISO 22000',
-    'SQF',
-    'BRC',
-    'FSSC 22000',
-    'IFS',
-    'Kosher',
-    'Halal',
+    'None',
+    'ISO 9001 (Quality)',
+    'ISO 14001 (Environmental)',
+    'GMP (Good Manufacturing Practice)',
+    'ISO 22000 / HACCP (Food Safety)',
+    'ISO 13485 (Medical Devices)',
+    'IATF 16949 (Automotive)',
     'Organic',
-    'Non-GMO',
+    'Halal',
+    'Kosher',
     'None'
   ];
 
@@ -127,8 +131,9 @@ const ProcessingEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
   return (
     <div className="processing-entry-form">
       <div className="form-header">
-        <h2>🏭 Processing/Packaging Entry</h2>
-        <p>Enter processing and packaging information for your product batch</p>
+        <div className="icon-tile"><FiPackage /></div>
+        <h2>Processing & Packaging</h2>
+        <p>Record how this batch was processed and packaged</p>
       </div>
       
       <form onSubmit={handleSubmit} className="entry-form">
@@ -141,7 +146,6 @@ const ProcessingEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             value={formData.processor_id}
             className="form-input"
             readOnly
-            style={{ backgroundColor: '#f7fafc', color: '#718096' }}
           />
         </div>
         
@@ -154,7 +158,7 @@ const ProcessingEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             value={formData.facility_name}
             onChange={handleChange}
             className="form-input"
-            placeholder="e.g., Green Valley Processing Plant"
+            placeholder="e.g., Northside Processing Plant"
           />
         </div>
         
@@ -179,7 +183,7 @@ const ProcessingEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
             value={formData.product_transformation_details}
             onChange={handleChange}
             className="form-textarea"
-            placeholder="e.g., Washed, sorted, and packaged into 500g portions"
+            placeholder="e.g., Cleaned, assembled, and packed into 50-unit cartons"
             rows="3"
           />
         </div>
@@ -204,7 +208,7 @@ const ProcessingEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
         </div>
         
         <div className="form-group">
-          <label htmlFor="expiration_date" className="form-label">Expiration Date <span className="mandatory-indicator">*</span></label>
+          <label htmlFor="expiration_date" className="form-label">Expiry / Use-by Date <span className="mandatory-indicator">*</span></label>
           <input
             type="date"
             id="expiration_date"

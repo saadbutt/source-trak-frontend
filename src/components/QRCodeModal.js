@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiCheck, FiClock, FiDownload, FiPrinter, FiX } from 'react-icons/fi';
 import QRCode from 'qrcode.react';
 import '../styles/QRCodeModal.css';
 
@@ -66,7 +67,7 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
           <title>QR Code - ${data.farm_name}</title>
           <style>
             body { 
-              font-family: Arial, sans-serif; 
+              font-family: Inter, -apple-system, 'Segoe UI', Roboto, sans-serif; 
               text-align: center; 
               padding: 20px;
               background-color: white;
@@ -75,7 +76,7 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
               max-width: 500px;
               margin: 0 auto;
             }
-            h1 { color: #2d3748; margin-bottom: 20px; }
+            h1 { color: #0F2236; margin-bottom: 20px; }
             .qr-code { 
               margin: 20px 0; 
               display: flex;
@@ -85,21 +86,21 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
               text-align: left; 
               margin-top: 20px; 
               padding: 15px;
-              background-color: #f7fafc;
-              border-radius: 5px;
+              background-color: #F6F9FE;
+              border-radius: 12px;
             }
             .data-item { 
               margin: 8px 0; 
               display: flex; 
               justify-content: space-between;
             }
-            .label { font-weight: bold; color: #4a5568; }
-            .value { color: #2d3748; }
+            .label { font-weight: 600; color: #7C8DA1; }
+            .value { color: #0F2236; font-weight: 600; }
             .qr-data {
               margin-top: 20px; 
               padding: 15px; 
-              background-color: #ebf8ff; 
-              border-radius: 5px;
+              background-color: #ECF3FE; 
+              border-radius: 12px;
               font-size: 12px;
               word-break: break-all;
             }
@@ -114,7 +115,7 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
             <div class="data-info">
               <h3>Product Information</h3>
               <div class="data-item">
-                <span class="label">Farm:</span>
+                <span class="label">Site:</span>
                 <span class="value">${data.farm_name}</span>
               </div>
               <div class="data-item">
@@ -122,7 +123,7 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
                 <span class="value">${data.product_type}</span>
               </div>
               <div class="data-item">
-                <span class="label">Harvest Date:</span>
+                <span class="label">Production Date:</span>
                 <span class="value">${data.harvest_date}</span>
               </div>
               <div class="data-item">
@@ -131,7 +132,7 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
               </div>
               <div class="data-item">
                 <span class="label">Status:</span>
-                <span class="value">${data.status === 'verified' ? '✅ Verified' : '⏳ Pending'}</span>
+                <span class="value">${data.status === 'verified' ? 'Verified' : 'Pending'}</span>
               </div>
             </div>
             <div class="qr-data">
@@ -152,7 +153,7 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
         <div className="qr-modal-header">
           <h2>Product QR Code</h2>
           <button className="qr-modal-close" onClick={onClose} title="Close">
-            ✕
+            <FiX size={18} />
           </button>
         </div>
         
@@ -172,7 +173,7 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
             <h3>Product Information</h3>
             <div className="info-grid">
               <div className="info-item">
-                <span className="info-label">Farm:</span>
+                <span className="info-label">Site:</span>
                 <span className="info-value">{data.farm_name}</span>
               </div>
               <div className="info-item">
@@ -180,7 +181,7 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
                 <span className="info-value">{data.product_type}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">Harvest Date:</span>
+                <span className="info-label">Production Date:</span>
                 <span className="info-value">{data.harvest_date}</span>
               </div>
               <div className="info-item">
@@ -190,7 +191,11 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
               <div className="info-item">
                 <span className="info-label">Status:</span>
                 <span className="info-value">
-                  {data.status === 'verified' ? '✅ Verified' : '⏳ Pending'}
+                  {data.status === 'verified' ? (
+                    <span className="chip chip-ok"><FiCheck />Verified</span>
+                  ) : (
+                    <span className="chip chip-wait"><FiClock />Pending</span>
+                  )}
                 </span>
               </div>
               <div className="info-item">
@@ -214,10 +219,12 @@ const QRCodeModal = ({ isOpen, onClose, data }) => {
         
         <div className="qr-modal-footer">
           <button onClick={handleDownload} className="btn btn-primary">
-            📥 Download QR Code
+            <FiDownload />
+            Download QR Code
           </button>
           <button onClick={handlePrint} className="btn btn-secondary">
-            🖨️ Print QR Code
+            <FiPrinter />
+            Print QR Code
           </button>
           <button onClick={onClose} className="btn btn-outline">
             Close

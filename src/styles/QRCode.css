@@ -1,73 +1,80 @@
 /* QR Code Generator Styles */
 
 .qr-generator {
-  background-color: white;
-  border-radius: 1rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-  padding: 2rem;
-  margin: 2rem 0;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  padding: 1.75rem;
+  margin: 1.5rem 0;
 }
 
 .qr-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .qr-header h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #2d3748;
-  margin-bottom: 0.5rem;
+  font-size: 1.375rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 0.375rem;
 }
 
 .qr-header p {
-  color: #718096;
-  font-size: 1rem;
+  color: var(--ink-2);
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .qr-container {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 2rem;
+  gap: 1.5rem;
   align-items: start;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .qr-code-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: white;
-  border: 2px solid #e2e8f0;
-  border-radius: 0.75rem;
-  padding: 1rem;
+  background-color: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-card);
+  padding: 0.75rem;
 }
 
 .qr-info {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .qr-details {
-  background-color: #f7fafc;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 1rem 1.125rem;
 }
 
 .qr-details h4 {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #2d3748;
-  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin-bottom: 0.5rem;
 }
 
 .qr-detail-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--line);
 }
 
 .qr-detail-item:last-child {
@@ -76,24 +83,14 @@
 
 .qr-detail-item .label {
   font-weight: 600;
-  color: #4a5568;
-  font-size: 0.875rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
 }
 
 .qr-detail-item .value {
-  color: #2d3748;
-  font-weight: 500;
-  font-size: 0.875rem;
-}
-
-.status-verified {
-  background-color: white;
-  color: #38a169 !important;
-  border: 1px solid #38a169;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.375rem;
+  color: var(--ink);
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
 }
 
 .download-btn {
@@ -101,17 +98,16 @@
 }
 
 .qr-instructions {
-  background-color: #f7fafc;
-  border-radius: 0.75rem;
-  padding: 1.5rem;
-  border-left: 4px solid #ff6b35;
+  background-color: var(--tint);
+  border-radius: 12px;
+  padding: 1.125rem 1.25rem;
 }
 
 .qr-instructions h4 {
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #2d3748;
-  margin-bottom: 1rem;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin-bottom: 0.625rem;
 }
 
 .qr-instructions ul {
@@ -121,45 +117,40 @@
 }
 
 .qr-instructions li {
-  color: #4a5568;
+  color: var(--ink-2);
   font-size: 0.875rem;
-  line-height: 1.6;
-  margin-bottom: 0.5rem;
-  padding-left: 1.5rem;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 0.375rem;
+  padding-left: 1.125rem;
   position: relative;
 }
 
-.qr-instructions li:before {
-  content: "•";
-  color: #ff6b35;
-  font-weight: bold;
+.qr-instructions li::before {
+  content: '';
   position: absolute;
   left: 0;
+  top: 0.5em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--primary);
 }
 
 .qr-instructions li:last-child {
   margin-bottom: 0;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .qr-container {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
-    text-align: center;
   }
-  
+
   .qr-code-wrapper {
     justify-self: center;
   }
-  
+
   .download-btn {
-    align-self: center;
-  }
-  
-  .qr-detail-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
+    align-self: stretch;
   }
 }
