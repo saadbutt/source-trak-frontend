@@ -9,39 +9,13 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import apiService from '../../services/api';
 import { ROLE_CONFIGS, QUANTITY_UNITS, STAGES } from './roleConfigs';
+import { displayValue, optionLabel, optionValue } from './format';
 import '../../styles/EntryWizard.css';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const EXPLORER_URL = 'https://explorer.sourcetrak.com/#/transactions';
 
 const allFields = (config) => config.steps.flatMap((s) => s.fields);
-
-const optionLabel = (opt) => (typeof opt === 'string' ? opt : opt.label);
-const optionValue = (field, opt) => (field.lower ? optionLabel(opt).toLowerCase() : optionLabel(opt));
-
-const formatDate = (v) => {
-  const d = new Date(`${v}T00:00:00`);
-  return Number.isNaN(d.getTime()) ? v : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-};
-const formatDateTime = (v) => {
-  const d = new Date(v);
-  return Number.isNaN(d.getTime()) ? v : d.toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-};
-
-// Human-readable value for the preview / review: option labels instead of the
-// lower-cased stored value, formatted dates, quantity with its unit.
-const displayValue = (field, data) => {
-  const v = data[field.key];
-  if (!v) return '';
-  if (field.type === 'date') return formatDate(v);
-  if (field.type === 'datetime') return formatDateTime(v);
-  if (field.type === 'quantity') return `${v} ${data[field.unitKey] || ''}`.trim();
-  if (field.options && field.lower) {
-    const match = field.options.find((o) => optionValue(field, o) === v);
-    return match ? optionLabel(match) : v;
-  }
-  return v;
-};
 
 const buildInitialData = (config, initialBatchId) => {
   const data = { [config.idKey]: uuidv4(), event_id: uuidv4(), batch_id: initialBatchId || '', ...(config.defaults || {}) };
