@@ -1,12 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FiArrowRight, FiCheck, FiClock, FiInbox, FiPackage } from 'react-icons/fi';
-import { useAuth } from '../contexts/AuthContext';
 import '../styles/DataHistory.css';
 
 const DataHistory = ({ farmData }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {

@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FiUsers } from 'react-icons/fi';
 import { v4 as uuidv4 } from 'uuid';
-import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
 import QRCodeGenerator from './QRCodeGenerator';
 import '../styles/ConsumerEntry.css';
 
 const ConsumerEntryForm = ({ onDataSubmit, initialBatchId, userRole }) => {
-  const { user } = useAuth();
   
   const [formData, setFormData] = useState({
     qrid: uuidv4(),

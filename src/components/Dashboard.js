@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import apiService from '../services/api';
 import { FiBox, FiCheckCircle } from 'react-icons/fi';
@@ -26,6 +26,8 @@ const Dashboard = () => {
     }
     
     loadUserHistory();
+    // loadUserHistory is redefined every render; listing it would refetch in a loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, navigate, user]);
 
   // Load user's traceability history from backend
