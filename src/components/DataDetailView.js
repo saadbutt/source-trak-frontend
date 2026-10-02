@@ -174,6 +174,11 @@ const DataDetailView = () => {
     link.click();
   };
 
+  const openAddData = () => {
+    setShowAddDataForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleDataSubmit = (newData) => {
     // Shown immediately; the full history is reloaded when the wizard closes.
     setBatchHistory((prev) => [...prev, newData]);
@@ -292,7 +297,7 @@ const DataDetailView = () => {
             <div className="bd-head-actions">
               <button type="button" className="btn btn-outline" onClick={handleShareLink}><FiLink />Copy link</button>
               {canAddData() && !showAddDataForm && (
-                <button type="button" className="btn btn-primary" onClick={() => setShowAddDataForm(true)}><FiPlus />Add data to batch</button>
+                <button type="button" className="btn btn-primary" onClick={openAddData}><FiPlus />Add data to batch</button>
               )}
             </div>
           </div>
@@ -351,8 +356,9 @@ const DataDetailView = () => {
                       const RoleIcon = ROLE_CONFIGS[stage.role]?.icon;
                       const entry = stage.entry;
                       const isMine = entry && user && String(entry.user_id) === String(user.id);
+                      const isMyTurn = !entry && canAddData() && user.role === stage.role;
                       return (
-                        <li key={stage.role} className={`bd-stage ${entry ? 'done' : 'todo'}`}>
+                        <li key={stage.role} className={`bd-stage ${entry ? 'done' : 'todo'}${isMyTurn ? ' mine' : ''}`}>
                           <div className="bd-stage-rail">
                             <span className="bd-stage-ic">{RoleIcon && <RoleIcon />}</span>
                           </div>
@@ -366,6 +372,8 @@ const DataDetailView = () => {
                                 entryVerified(entry)
                                   ? <span className="chip chip-ok"><FiCheck />Verified</span>
                                   : <span className="chip chip-wait"><FiClock />Pending</span>
+                              ) : isMyTurn ? (
+                                <span className="chip chip-primary">Your turn</span>
                               ) : (
                                 <span className="chip bd-chip-muted">Waiting</span>
                               )}
@@ -379,11 +387,16 @@ const DataDetailView = () => {
                                 </div>
                                 {renderEntryDetails(stage.role, entry)}
                               </>
+                            ) : isMyTurn ? (
+                              <div className="bd-stage-cta">
+                                <p>This is your stage. Record your {stage.label.toLowerCase()} details for this batch.</p>
+                                <button type="button" className="btn btn-primary" onClick={openAddData}>
+                                  <FiPlus />Add your data
+                                </button>
+                              </div>
                             ) : (
                               <p className="bd-stage-wait">
-                                {canAddData() && user.role === stage.role
-                                  ? 'This is your stage. Add your data when the batch reaches you.'
-                                  : `Waiting for the ${stage.label.toLowerCase()} partner to add their data.`}
+                                Waiting for the {stage.label.toLowerCase()} partner to add their data.
                               </p>
                             )}
                           </div>

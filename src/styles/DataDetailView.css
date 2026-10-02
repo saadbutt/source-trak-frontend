@@ -461,6 +461,40 @@
   font-size: 0.8125rem;
 }
 
+.bd-stage.mine .bd-stage-ic {
+  background: var(--tint);
+  border: 1.5px solid var(--primary);
+  color: var(--primary-deep);
+}
+
+.bd-stage.mine .bd-stage-h h3 {
+  color: var(--primary-deep);
+}
+
+.bd-stage-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.625rem;
+  padding: 0.875rem 1rem;
+  border: 1.5px dashed var(--tint-ring);
+  border-radius: 12px;
+  background: var(--tint);
+}
+
+.bd-stage-cta p {
+  flex: 1 1 14rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary-deep);
+}
+
+.bd-stage-cta .btn {
+  padding: 0.6875rem 1.125rem;
+}
+
 .bd-stage-wait {
   margin-top: 0.25rem;
   font-size: 0.8125rem;
